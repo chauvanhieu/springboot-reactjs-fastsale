@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import shopService from "./../service/shopService";
-import userService from "./../service/userService";
+import Alert from "react-bootstrap/Alert";
 import { useDispatch } from "react-redux";
-import { setCurrentShop } from "../redux/shopSlice";
 import { loginSuccess } from "../redux/authSlice";
 import registerService from "../service/registerService";
+import { useNavigate } from "react-router-dom";
 function RegisterPage() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const [isSigninError, setIsSigninError] = useState(false);
+
+  const [errorMsg, setErrorMsg] = useState("");
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -16,6 +21,7 @@ function RegisterPage() {
     password: "",
     confirmPassword: "",
   });
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({
@@ -27,6 +33,25 @@ function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Thêm xác thực dữ liệu
+    if (
+      !formData.username ||
+      !formData.email ||
+      !formData.shopName ||
+      !formData.password ||
+      !formData.confirmPassword
+    ) {
+      setErrorMsg("Please fill in all fields.");
+      setIsSigninError(true);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMsg("Passwords do not match.");
+      setIsSigninError(true);
+      return;
+    }
+
     try {
       const newUser = {
         username: formData.username,
@@ -35,15 +60,14 @@ function RegisterPage() {
         password: formData.password,
       };
       const res = await registerService.register(newUser);
-      console.log(res);
-      const shop = {
-        id: res.data.user.shopId,
-        name: formData.shopName,
-        status: 1,
-      };
+
       dispatch(loginSuccess(res.data));
-      dispatch(setCurrentShop(shop));
+      localStorage.setItem("accessToken", res.data.accessToken);
+      localStorage.setItem("currentUser", JSON.stringify(res.data.user));
+      navigate("/app");
     } catch (error) {
+      setErrorMsg("Register failed !");
+      setIsSigninError(true);
       console.log(error);
     }
   };
@@ -114,6 +138,13 @@ function RegisterPage() {
               Register
             </Button>
           </Form>
+          {isSigninError ? (
+            <center>
+              <Alert variant={"danger"}>{errorMsg}</Alert>
+            </center>
+          ) : (
+            ""
+          )}
         </div>
       </div>
     </div>

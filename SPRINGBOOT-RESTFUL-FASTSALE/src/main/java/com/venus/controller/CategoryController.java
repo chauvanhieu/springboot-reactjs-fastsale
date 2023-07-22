@@ -68,10 +68,9 @@ public class CategoryController {
 			Page<Category> pageCategory;
 
 			if (shop.isEmpty()) {
-				pageCategory = categoryRepository.findByNameContainingAndStatus(keyword, 1, pageable);
+				pageCategory = categoryRepository.findByNameContaining(keyword, pageable);
 			} else {
-				pageCategory = categoryRepository.findByShopAndNameContainingAndStatus(shop.get(), keyword, 1,
-						pageable);
+				pageCategory = categoryRepository.findByShopAndNameContaining(shop.get(), keyword, pageable);
 			}
 			if (pageCategory.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);

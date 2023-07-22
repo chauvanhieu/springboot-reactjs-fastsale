@@ -73,6 +73,7 @@ public class RegisterController {
 			ResponseLogin res = new ResponseLogin();
 			res.setUser(userConverter.toDTO(newUser));
 			res.setAccessToken(token);
+			res.setShop(shopConverter.toDTO(newUser.getShop()));
 			return new ResponseEntity<>(res, HttpStatus.OK);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());

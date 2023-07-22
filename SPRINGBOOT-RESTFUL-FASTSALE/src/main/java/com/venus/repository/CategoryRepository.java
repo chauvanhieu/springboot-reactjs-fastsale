@@ -9,8 +9,8 @@ import com.venus.entities.Shop;
 
 public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
-	Page<Category> findByNameContainingAndStatus(String name, int status, Pageable pageable);
+	Page<Category> findByNameContaining(String name, Pageable pageable);
 
-	Page<Category> findByShopAndNameContainingAndStatus(Shop shop, String name, int status, Pageable pageable);
+	Page<Category> findByShopAndNameContaining(Shop shop, String name, Pageable pageable);
 
 }

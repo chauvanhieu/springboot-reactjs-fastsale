@@ -10,7 +10,6 @@ const categoryService = {
         sort_by: sortBy || "id",
         shop_id: shopId || 0,
       };
-
       const res = await AxiosService.get("/api/categories", params);
       return res;
     } catch (error) {

@@ -72,9 +72,6 @@ class AxiosService {
       if (error.response.status === 409) {
         alert("Email đã tồn tại");
       }
-      if (error.response.status === 403 || error.response.status === 404) {
-        alert("Bạn không có quyền truy cập vào trang");
-      }
     } else if (error.request) {
       // Yêu cầu đã được gửi nhưng không nhận được phản hồi từ máy chủ
       console.error("Request Error:", error.request);

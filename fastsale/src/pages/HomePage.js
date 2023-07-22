@@ -4,6 +4,7 @@ import Carousels from "../components/Carousels";
 import { Route, Routes } from "react-router-dom";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
+
 export const HomePage = () => {
   return (
     <div>
