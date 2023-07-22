@@ -11,6 +11,8 @@ export const loginUser = async (user, dispatch, navigate) => {
 
     initProducts(res.data.user.shopId, dispatch);
 
+    localStorage.setItem("accessToken", res.data.accessToken);
+
     navigate("/");
   } catch (error) {
     navigate("/login");

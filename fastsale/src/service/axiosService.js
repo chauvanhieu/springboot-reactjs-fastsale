@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 class AxiosService {
   constructor() {
     const baseURL = process.env.REACT_APP_API_URL || "http://localhost:8080";
@@ -7,7 +6,7 @@ class AxiosService {
     this.httpClient = axios.create({
       baseURL,
       headers: {
-        Authorization: process.env.REACT_APP_TOKEN,
+        Authorization: localStorage.getItem("accessToken"),
         "Content-Type": "application/json",
       },
     });
@@ -15,7 +14,7 @@ class AxiosService {
     this.httpClient.interceptors.request.use(
       (config) => {
         // Thêm xử lý trước khi gửi yêu cầu (nếu cần)
-        const token = process.env.REACT_APP_TOKEN;
+        const token = localStorage.getItem("accessToken");
         if (token) {
           config.headers.Authorization = token;
         }
@@ -66,14 +65,15 @@ class AxiosService {
 
   handleRequestError(error) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    let navigate = useNavigate();
     if (error.response) {
       // Có phản hồi từ máy chủ, nhưng không thành công (ví dụ: mã lỗi 4xx hoặc 5xx)
       console.error("Response Error:", error.response.data);
       console.error("Status Code:", error.response.status);
+      if (error.response.status === 409) {
+        alert("Email đã tồn tại");
+      }
       if (error.response.status === 403 || error.response.status === 404) {
         alert("Bạn không có quyền truy cập vào trang");
-        navigate("/login");
       }
     } else if (error.request) {
       // Yêu cầu đã được gửi nhưng không nhận được phản hồi từ máy chủ

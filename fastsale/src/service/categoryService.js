@@ -1,7 +1,6 @@
 import AxiosService from "./axiosService";
-
 const categoryService = {
-  findAll: async (keyword, page, limit, orderBy, sortBy, shopId) => {
+  findAll: async ({ keyword, page, limit, orderBy, sortBy, shopId }) => {
     try {
       const params = {
         keyword: keyword || "",

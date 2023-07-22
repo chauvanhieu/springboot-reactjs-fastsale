@@ -13,6 +13,6 @@ public class ProductDTO {
 	private double importPrice;
 	private int shopId;
 	private int status;
-
+	private String barCode;
 	// Constructors, Getters and Setters
 }

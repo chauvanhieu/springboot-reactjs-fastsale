@@ -37,22 +37,21 @@ public class Product {
 	@ManyToOne
 	private Shop shop;
 
+	private String barCode;
+
+	public String getBarCode() {
+		return barCode;
+	}
+
+	public void setBarCode(String barCode) {
+		this.barCode = barCode;
+	}
+
 	@Column(name = "status", nullable = false)
 	private int status;
 
 	// Constructors
 	public Product() {
-	}
-
-	public Product(String name, double price, Category category, int available, double importPrice, Shop shop,
-			int status) {
-		this.name = name;
-		this.price = price;
-		this.category = category;
-		this.available = available;
-		this.importPrice = importPrice;
-		this.shop = shop;
-		this.status = status;
 	}
 
 	// Getters and Setters
