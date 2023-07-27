@@ -94,7 +94,6 @@ public class ProductController {
 			if (category.isEmpty()) {
 				if (shop.isEmpty()) {
 					return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-//					pageProduct = productRepository.findByNameContainingAndPriceBetween(keyword, min, max, pageable);
 				} else {
 					pageProduct = productRepository.findByShopAndNameContainingAndPriceBetween(shop.get(), keyword, min,
 							max, pageable);

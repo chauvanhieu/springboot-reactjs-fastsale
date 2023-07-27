@@ -2,7 +2,6 @@ import AxiosService from "./axiosService";
 
 const productService = {
   findByShopId: async (shopId) => {
-    console.log(shopId);
     try {
       const response = await AxiosService.get(
         `/api/products?shop_id=${shopId}`

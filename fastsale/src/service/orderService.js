@@ -27,7 +27,7 @@ const orderService = {
           end_date: endDate,
         },
       });
-      return res.data;
+      return res;
     } catch (error) {
       console.error("Error fetching orders:", error);
       throw error; // Ném lại lỗi để xử lý tiếp (nếu cần)
@@ -37,7 +37,7 @@ const orderService = {
   findById: async (id) => {
     try {
       const res = await AxiosService.get(`/api/orders/${id}`);
-      return res.data;
+      return res;
     } catch (error) {
       console.error("Error fetching order by id:", error);
       throw error; // Ném lại lỗi để xử lý tiếp (nếu cần)
@@ -47,7 +47,7 @@ const orderService = {
   create: async (order) => {
     try {
       const res = await AxiosService.post("/api/orders", order);
-      return res.data;
+      return res;
     } catch (error) {
       console.error("Error creating order:", error);
       throw error; // Ném lại lỗi để xử lý tiếp (nếu cần)
@@ -57,7 +57,7 @@ const orderService = {
   update: async (id, order) => {
     try {
       const res = await AxiosService.put(`/api/orders/${id}`, order);
-      return res.data;
+      return res;
     } catch (error) {
       console.error("Error updating order:", error);
       throw error; // Ném lại lỗi để xử lý tiếp (nếu cần)

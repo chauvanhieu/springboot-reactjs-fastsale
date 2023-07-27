@@ -4,7 +4,6 @@ import productService from "./../service/productService";
 export const getData = createAsyncThunk(
   "product/setData",
   async ({ shopId }, thunkAPI) => {
-    console.log(shopId);
     try {
       const response = await productService.findAll({ shop_id: shopId });
       return response.data.data;

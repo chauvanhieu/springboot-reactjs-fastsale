@@ -162,6 +162,7 @@ public class OrderController {
 
 			Order order = orderConverter.toEntity(orderDTO);
 			order.setOrderType(ORDER_TYPE);
+			order.setCreatedAt(new Date());
 			Order savedOrder = orderRepository.save(order);
 			if (order.getOrderDetails().size() > 0) {
 				order.getOrderDetails().forEach(item -> {

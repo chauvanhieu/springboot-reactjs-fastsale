@@ -1,12 +1,22 @@
+import { add } from "../redux/cartSlice";
+import { useDispatch } from "react-redux";
+
 function ProductItem(props) {
+  const dispatch = useDispatch();
+
   const item = props.item;
 
+  const addToCart = () => {
+    dispatch(add(item));
+  };
   return (
     <div
+      onClick={addToCart}
       className="item col-2 text-center"
       style={{
         border: "1px solid blue",
-        borderRadius: "15px",
+        borderRadius: "25%",
+        userSelect: "none",
         margin: 37,
         cursor: "pointer",
       }}
@@ -16,7 +26,9 @@ function ProductItem(props) {
       </div>
       <div className="item-info ">
         <h6 style={{ color: "blue" }}>{item.name}</h6>
-        <p style={{ fontWeight: 700, color: "red" }}>{item.price}</p>
+        <p style={{ fontWeight: 700, color: "red" }}>
+          {item.price.toLocaleString()}
+        </p>
       </div>
     </div>
   );

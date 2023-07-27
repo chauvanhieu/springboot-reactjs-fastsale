@@ -3,11 +3,11 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
 function SideBar() {
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   const userRole = useSelector((state) => state.auth.currentUser?.user.role);
   const closeSideBar = () => {
     const buttonElement = document.querySelector(".btn-close");
@@ -17,12 +17,7 @@ function SideBar() {
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("currentUser");
-    dispatch(logout());
-    try {
-      window.location("/home");
-    } catch (error) {
-      console.log(error);
-    }
+    dispatch(logout({ dispatch, navigate }));
   };
   return (
     <>

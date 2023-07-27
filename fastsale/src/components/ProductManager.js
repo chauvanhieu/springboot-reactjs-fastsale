@@ -341,13 +341,17 @@ function ProductManager() {
                 {categoryData ? (
                   categoryData.map((item) => {
                     return (
-                      <option key={item.id} value={item.id}>
+                      <option
+                        key={item.id}
+                        value={item.id}
+                        selected={item.id === productToEdit.categoryId}
+                      >
                         {item.name}
                       </option>
                     );
                   })
                 ) : (
-                  <option value="0">Nothing here</option>
+                  <></>
                 )}
               </Form.Select>
             </Form.Group>
