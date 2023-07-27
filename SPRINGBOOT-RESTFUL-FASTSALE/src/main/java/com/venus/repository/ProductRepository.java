@@ -15,11 +15,10 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 	Page<Product> findByCategoryAndNameContainingAndStatusAndPriceBetweenAndShop(Category category, String name,
 			int status, double min, double max, Shop shop, Pageable pageable);
 
-	Page<Product> findByShopAndNameContainingAndStatusAndPriceBetween(Shop shop, String name, int status, double min,
-			double max, Pageable pageable);
-
-	Page<Product> findByNameContainingAndStatusAndPriceBetween(String name, int status, double min, double max,
+	Page<Product> findByShopAndNameContainingAndPriceBetween(Shop shop, String name, double min, double max,
 			Pageable pageable);
+
+	Page<Product> findByNameContainingAndPriceBetween(String name, double min, double max, Pageable pageable);
 
 	Page<Product> findByCategoryAndNameContainingAndStatusAndPriceBetween(Category category, String name, int status,
 			double min, double max, Pageable pageable);

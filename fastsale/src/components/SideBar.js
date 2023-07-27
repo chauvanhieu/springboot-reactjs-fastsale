@@ -2,12 +2,14 @@ import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import Offcanvas from "react-bootstrap/Offcanvas";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { logout } from "../redux/authSlice";
 function SideBar() {
   const dispatch = useDispatch();
 
+  const userRole = useSelector((state) => state.auth.currentUser?.user.role);
+  console.log(userRole);
   const closeSideBar = () => {
     const buttonElement = document.querySelector(".btn-close");
     buttonElement.click();
@@ -17,6 +19,11 @@ function SideBar() {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("currentUser");
     dispatch(logout());
+    try {
+      window.location("/home");
+    } catch (error) {
+      console.log(error);
+    }
   };
   return (
     <>
@@ -66,9 +73,14 @@ function SideBar() {
                 <Nav.Item onClick={closeSideBar} className="m-3">
                   <Link to="/app/product">Sản phẩm</Link>
                 </Nav.Item>
-                <Nav.Item onClick={closeSideBar} className="m-3">
-                  <Link to="/app/user">Nhân viên</Link>
-                </Nav.Item>
+                {userRole === "ROLE_ADMIN" ? (
+                  <Nav.Item onClick={closeSideBar} className="m-3">
+                    <Link to="/app/user">Nhân viên</Link>
+                  </Nav.Item>
+                ) : (
+                  <></>
+                )}
+
                 <Nav.Item onClick={closeSideBar} className="m-3">
                   <Link to="/app/category">Danh mục sản phẩm</Link>
                 </Nav.Item>

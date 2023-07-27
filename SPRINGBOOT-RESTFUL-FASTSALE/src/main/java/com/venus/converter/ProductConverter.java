@@ -28,14 +28,16 @@ public class ProductConverter {
 		productDTO.setAvailable(product.getAvailable());
 		productDTO.setImportPrice(product.getImportPrice());
 		productDTO.setShopId(product.getShop().getId());
+		productDTO.setCategoryName(product.getCategory().getName());
 		productDTO.setStatus(product.getStatus());
-		productDTO.setBarCode(product.getBarCode());
+		productDTO.setBarcode(product.getBarCode());
 		return productDTO;
 	}
 
 	public Product toEntity(ProductDTO productDTO) {
 		Product product = productRepository.findById(productDTO.getId()).orElse(new Product());
-		product.setBarCode(productDTO.getBarCode());
+		product.setBarCode(productDTO.getBarcode());
+		System.out.println(product.getBarCode());
 		product.setName(productDTO.getName());
 		product.setPrice(productDTO.getPrice());
 		product.setCategory(categoryRepository.findById(productDTO.getCategoryId()).orElse(null));

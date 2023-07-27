@@ -2,6 +2,7 @@ import AxiosService from "./axiosService";
 
 const productService = {
   findByShopId: async (shopId) => {
+    console.log(shopId);
     try {
       const response = await AxiosService.get(
         `/api/products?shop_id=${shopId}`
@@ -65,7 +66,7 @@ const productService = {
     }
   },
 
-  restoreProduct: async (productId) => {
+  restore: async (productId) => {
     try {
       await AxiosService.post(`/api/products/restore/${productId}`);
     } catch (error) {

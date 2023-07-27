@@ -70,6 +70,7 @@ public class RegisterController {
 			User newUser = userRepository.save(userConverter.toEntity(userDTO));
 
 			String token = jwtService.generateTokenLogin(newUser.getEmail());
+
 			ResponseLogin res = new ResponseLogin();
 			res.setUser(userConverter.toDTO(newUser));
 			res.setAccessToken(token);

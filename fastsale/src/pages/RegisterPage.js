@@ -62,8 +62,10 @@ function RegisterPage() {
       const res = await registerService.register(newUser);
 
       dispatch(loginSuccess(res.data));
+
       localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("currentUser", JSON.stringify(res.data.user));
+
       navigate("/app");
     } catch (error) {
       setErrorMsg("Register failed !");

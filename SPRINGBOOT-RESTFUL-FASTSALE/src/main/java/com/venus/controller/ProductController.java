@@ -93,11 +93,11 @@ public class ProductController {
 
 			if (category.isEmpty()) {
 				if (shop.isEmpty()) {
-					pageProduct = productRepository.findByNameContainingAndStatusAndPriceBetween(keyword, 1, min, max,
-							pageable);
+					return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//					pageProduct = productRepository.findByNameContainingAndPriceBetween(keyword, min, max, pageable);
 				} else {
-					pageProduct = productRepository.findByShopAndNameContainingAndStatusAndPriceBetween(shop.get(),
-							keyword, 1, min, max, pageable);
+					pageProduct = productRepository.findByShopAndNameContainingAndPriceBetween(shop.get(), keyword, min,
+							max, pageable);
 				}
 			} else {
 				if (category.get().getStatus() == 1) {

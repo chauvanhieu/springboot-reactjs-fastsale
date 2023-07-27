@@ -9,10 +9,11 @@ public class ProductDTO {
 	private String name;
 	private double price;
 	private int categoryId;
+	private String categoryName;
 	private int available;
 	private double importPrice;
 	private int shopId;
 	private int status;
-	private String barCode;
+	private String barcode;
 	// Constructors, Getters and Setters
 }

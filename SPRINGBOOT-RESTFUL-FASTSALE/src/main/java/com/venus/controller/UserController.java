@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.venus.converter.UserConverter;
 import com.venus.dto.ResponseOutput;
 import com.venus.dto.UserDTO;
+import com.venus.entities.Shop;
 import com.venus.entities.User;
+import com.venus.repository.ShopRepository;
 import com.venus.repository.UserRepository;
 
 @RestController
@@ -33,6 +35,8 @@ public class UserController {
 
 	@Autowired
 	UserRepository userRepository;
+	@Autowired
+	ShopRepository shopRepository;
 	@Autowired
 	UserConverter userConverter;
 	private static final int DEFAULT_PAGE = 1;
@@ -44,10 +48,10 @@ public class UserController {
 			@RequestParam(value = "page", defaultValue = "1") int page,
 			@RequestParam(value = "limit", defaultValue = "999999") int limit,
 			@RequestParam(value = "order_by", defaultValue = "desc") String orderBy,
-			@RequestParam(value = "sort_by", defaultValue = "id") String sortBy) {
+			@RequestParam(value = "sort_by", defaultValue = "id") String sortBy,
+			@RequestParam(value = "shop_id", defaultValue = "0") int shopId) {
 
 		try {
-
 			if (page < 1) {
 				page = DEFAULT_PAGE;
 			}
@@ -56,20 +60,25 @@ public class UserController {
 				limit = DEFAULT_LIMIT;
 			}
 
+			Optional<Shop> shop = shopRepository.findById(shopId);
+
 			Pageable pageable = PageRequest.of(page - 1, limit, Sort.by(
 					orderBy.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy.toLowerCase()));
 
-			Page<User> pageUser = userRepository.findByNameContainingOrEmailContainingAndStatus(keyword, keyword, 1,
-					pageable);
-			if (pageUser.isEmpty()) {
+			Page<User> pageUser;
+
+			if (shop.isPresent()) {
+				pageUser = userRepository.findByShopAndNameContaining(shop.get(), keyword, pageable);
+			} else {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}
+
 			List<UserDTO> DTOs = new ArrayList<>();
 			for (User item : pageUser.getContent()) {
 				DTOs.add(userConverter.toDTO(item));
 			}
 
-			ResponseOutput<List<UserDTO>> output = new ResponseOutput<List<UserDTO>>();
+			ResponseOutput<List<UserDTO>> output = new ResponseOutput<>();
 			output.setData(DTOs);
 			output.setLimit(limit);
 			output.setPage(page);
@@ -101,7 +110,7 @@ public class UserController {
 
 	@PostMapping
 	public ResponseEntity<?> create(@RequestBody UserDTO item) {
-
+		System.out.println(item.getRole());
 		try {
 
 			Optional<User> existUser = userRepository.findByEmail(item.getEmail());

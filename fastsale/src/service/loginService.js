@@ -1,6 +1,12 @@
 import AxiosService from "./axiosService";
 import axios from "axios";
 import { loginSuccess } from "../redux/authSlice";
+import { setData as setDataProduct } from "../redux/productSlice";
+import { setData as setDataCategory } from "../redux/categorySlice";
+import { setData as setDataUser } from "../redux/userSlice";
+import categoryService from "./categoryService";
+import productService from "./productService";
+import userService from "./userService";
 
 const loginService = {
   login: async (email, password) => {
@@ -21,9 +27,27 @@ const loginService = {
           process.env.REACT_APP_API_URL + "/login/remember",
           { token: localStorage.getItem("accessToken") }
         );
+
+        const categoryRes = await categoryService.findAll({
+          shopId: res.data.user.shopId,
+        });
+
+        const productRes = await productService.findByShopId(
+          res.data.user.shopId
+        );
+
+        const userRes = await userService.findAll({
+          shopId: res.data.user.shopId,
+        });
+
+        dispatch(setDataCategory(categoryRes.data?.data));
+        dispatch(setDataProduct(productRes.data?.data));
+        dispatch(setDataUser(userRes.data?.data));
+        dispatch(loginSuccess(res.data));
+
         localStorage.setItem("accessToken", res.data.accessToken);
         localStorage.setItem("currentUser", JSON.stringify(res.data.user));
-        dispatch(loginSuccess(res.data));
+
         navigate("/app");
       } else {
         navigate("/home");

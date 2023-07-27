@@ -50,6 +50,9 @@ public class LoginController {
 
 			Optional<User> user = userRepository.findByEmail(email);
 			if (user.isPresent()) {
+				if (user.get().getStatus() != 1) {
+					return new ResponseEntity<>("Tài khoản đã bị vô hiệu hóa", HttpStatus.UNAUTHORIZED);
+				}
 				boolean check = bCryptService.checkPassword(password, user.get().getPassword());
 				if (check) {
 					String token = jwtService.generateTokenLogin(email);
