@@ -27,6 +27,8 @@ public class JwtService {
 	private UserRepository userRepository;
 	@Autowired
 	private HttpServletRequest request;
+
+	@SuppressWarnings("unused")
 	@Autowired
 	private HttpServletResponse response;
 

@@ -37,7 +37,6 @@ public class ProductConverter {
 	public Product toEntity(ProductDTO productDTO) {
 		Product product = productRepository.findById(productDTO.getId()).orElse(new Product());
 		product.setBarCode(productDTO.getBarcode());
-		System.out.println(product.getBarCode());
 		product.setName(productDTO.getName());
 		product.setPrice(productDTO.getPrice());
 		product.setCategory(categoryRepository.findById(productDTO.getCategoryId()).orElse(null));

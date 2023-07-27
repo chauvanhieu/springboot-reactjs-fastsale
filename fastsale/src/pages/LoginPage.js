@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
-import loginService from "../service/loginService";
 import { useDispatch } from "react-redux";
-import { loginSuccess } from "../redux/authSlice";
+import { login as handleLogin } from "../redux/authSlice";
 import { useNavigate } from "react-router-dom";
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -24,10 +23,7 @@ function LoginPage() {
 
   async function login() {
     try {
-      const res = await loginService.login(email, password);
-      dispatch(loginSuccess(res.data));
-      localStorage.setItem("accessToken", res.data.accessToken);
-      localStorage.setItem("currentUser", JSON.stringify(res.data.user));
+      dispatch(handleLogin({ email, password, dispatch }));
       navigate("/app");
     } catch (error) {
       setIsLoginError(true);

@@ -2,7 +2,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import categoryService from "./../service/categoryService";
-import { setData } from "../redux/categorySlice";
+import { getData } from "../redux/categorySlice";
 
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
@@ -34,8 +34,7 @@ function CategoryManager() {
 
   const getDataFromDatabase = async () => {
     try {
-      const res = await categoryService.findAll({ shopId });
-      dispatch(setData(res.data.data));
+      dispatch(getData({ shopId }));
     } catch (error) {
       console.log(error);
     }

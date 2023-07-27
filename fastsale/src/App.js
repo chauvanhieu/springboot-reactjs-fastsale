@@ -1,20 +1,30 @@
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Application from "./pages/Appication";
 import { HomePage } from "./pages/HomePage";
-import { useEffect } from "react";
-import loginService from "./service/loginService";
-import { useDispatch } from "react-redux";
-
+import { useSelector } from "react-redux";
 function App() {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const load = async () => {
-    await loginService.rememberUserLoad(navigate, dispatch);
-  };
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const loading = useSelector((state) => state.auth.loading);
+  const error = useSelector((state) => state.auth.error);
+
+  if (error) {
+    return (
+      <>
+        <center>
+          <h1>LỖI...</h1>
+        </center>
+      </>
+    );
+  }
+
+  if (loading) {
+    return (
+      <>
+        <center>
+          <h1>Đang đăng nhập....</h1>
+        </center>
+      </>
+    );
+  }
 
   return (
     <>

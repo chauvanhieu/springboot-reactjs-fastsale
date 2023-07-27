@@ -14,9 +14,30 @@ const productService = {
     }
   },
 
-  findAll: async (params) => {
+  findAll: async ({
+    keyword,
+    page,
+    limit,
+    category_id,
+    order_by,
+    sort_by,
+    min_price,
+    max_price,
+    shop_id,
+  }) => {
+    const params = {
+      keyword: keyword || "",
+      page: page || 1,
+      limit: limit || 999999,
+      category_id: category_id || 0,
+      order_by: order_by || "desc",
+      sort_by: sort_by || "price",
+      min_price: min_price || null,
+      max_price: max_price || null,
+      shop_id: shop_id || 0,
+    };
     try {
-      const response = await AxiosService.get(`/api/products`, { params });
+      const response = await AxiosService.get(`/api/products`, params);
       return response;
     } catch (error) {
       console.error("Error fetching products:", error);

@@ -9,7 +9,6 @@ function SideBar() {
   const dispatch = useDispatch();
 
   const userRole = useSelector((state) => state.auth.currentUser?.user.role);
-  console.log(userRole);
   const closeSideBar = () => {
     const buttonElement = document.querySelector(".btn-close");
     buttonElement.click();

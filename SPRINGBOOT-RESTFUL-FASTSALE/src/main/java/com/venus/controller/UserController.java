@@ -110,7 +110,6 @@ public class UserController {
 
 	@PostMapping
 	public ResponseEntity<?> create(@RequestBody UserDTO item) {
-		System.out.println(item.getRole());
 		try {
 
 			Optional<User> existUser = userRepository.findByEmail(item.getEmail());

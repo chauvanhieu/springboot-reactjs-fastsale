@@ -4,10 +4,9 @@ import Modal from "react-bootstrap/Modal";
 import Table from "react-bootstrap/Table";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { setData } from "../redux/productSlice";
-import { setData as setCategoryData } from "../redux/categorySlice";
+import { getData } from "../redux/productSlice";
+import { getData as setCategoryData } from "../redux/categorySlice";
 import productService from "./../service/productService";
-import categoryService from "../service/categoryService";
 
 function ProductManager() {
   const [show, setShow] = useState(false);
@@ -20,10 +19,16 @@ function ProductManager() {
 
   const [showEdit, setShowEdit] = useState(false);
 
-  const shopId = useSelector((state) => state.auth.currentUser?.user.shopId);
+  const shopId = useSelector((state) => state.auth.currentUser?.shop.id);
 
   const categoryData = useSelector((state) => state.category?.data);
 
+  const loading = useSelector((state) => state.auth.loading);
+
+  const error = useSelector((state) => state.auth.error);
+  const dispatch = useDispatch();
+
+  const productData = useSelector((state) => state.product.data);
   const [productToCreate, setProductToCreate] = useState({
     name: "",
     categoryId: 0,
@@ -44,6 +49,31 @@ function ProductManager() {
     barcode: "",
     shopId: shopId,
   });
+
+  useEffect(() => {
+    getDataFromDatabase();
+    getCategoryDataFromDatabase();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  if (error) {
+    return (
+      <>
+        <center>
+          <h1>LỖI...</h1>
+        </center>
+      </>
+    );
+  }
+
+  if (loading) {
+    return (
+      <>
+        <center>
+          <h1>Đang đăng nhập....</h1>
+        </center>
+      </>
+    );
+  }
 
   const handleChangeProductToCreate = (e) => {
     const { name, value } = e.target;
@@ -67,14 +97,10 @@ function ProductManager() {
     setShowEdit(true);
     setProductToEdit(item);
   };
-  const dispatch = useDispatch();
-
-  const productData = useSelector((state) => state.product.data);
 
   const getDataFromDatabase = async () => {
     try {
-      const res = await productService.findByShopId(shopId);
-      dispatch(setData(res.data?.data));
+      dispatch(getData({ shopId }));
     } catch (error) {
       console.log(error);
     }
@@ -82,18 +108,11 @@ function ProductManager() {
 
   const getCategoryDataFromDatabase = async () => {
     try {
-      const res = await categoryService.findAll({ shopId });
-      dispatch(setCategoryData(res.data.data));
+      dispatch(setCategoryData({ shopId }));
     } catch (error) {
       console.log(error);
     }
   };
-
-  useEffect(() => {
-    getDataFromDatabase();
-    getCategoryDataFromDatabase();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const disable = async (id) => {
     try {
