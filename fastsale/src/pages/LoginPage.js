@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { login as handleLogin } from "../redux/authSlice";
 import { useNavigate } from "react-router-dom";
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoginError, setIsLoginError] = useState(false);
-
+  const currentUser = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -23,12 +22,20 @@ function LoginPage() {
 
   async function login() {
     try {
-      dispatch(handleLogin({ email, password, dispatch }));
-      navigate("/app");
+      dispatch(handleLogin({ email, password, dispatch, navigate }));
     } catch (error) {
-      setIsLoginError(true);
       console.log(error);
     }
+  }
+
+  if (currentUser.loading) {
+    return (
+      <>
+        <center>
+          <h1>Đang đăng nhập vào phần mềm...</h1>
+        </center>
+      </>
+    );
   }
 
   return (
@@ -77,10 +84,11 @@ function LoginPage() {
                 Register
               </Button>
             </center>
-            {isLoginError ? (
+            {currentUser.error ? (
               <center>
-                {" "}
-                <Alert variant={"danger"}>Login failed !</Alert>
+                <Alert variant={"danger"}>
+                  Your email or password is invalid, try again!
+                </Alert>
               </center>
             ) : (
               ""

@@ -1,9 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
-import categoryService from "./../service/categoryService";
-import { getData } from "../redux/categorySlice";
-
+import { useState } from "react";
+import {
+  add,
+  remove,
+  restore as restoreCategory,
+  update,
+} from "../redux/categorySlice";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
@@ -15,35 +18,28 @@ function CategoryManager() {
     setShow(false);
   };
 
+  const categoryData = useSelector((state) => state.category?.data);
+  const shopId = useSelector((state) => state.auth.currentUser?.shop.id);
+
   const handleShow = () => setShow(true);
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [categoryNameToEdit, setCategoryNameToEdit] = useState("");
-  const [idCategoryToEdit, setIdCategoryToEdit] = useState(0);
   const [showEdit, setShowEdit] = useState(false);
   const handleCloseEdit = () => setShowEdit(false);
-  const handleShowEdit = (id) => {
+  const [categoryEmp, setCategoryEmp] = useState({
+    id: 0,
+    name: "",
+    status: 1,
+    shopId,
+  });
+  const handleShowEdit = (item) => {
     setShowEdit(true);
-    setIdCategoryToEdit(id);
+    setCategoryEmp(item);
   };
-
-  const categoryData = useSelector((state) => state.category?.data);
-
-  const shopId = useSelector((state) => state.auth.currentUser?.user.shopId);
 
   const dispatch = useDispatch();
 
-  const getDataFromDatabase = async () => {
-    try {
-      dispatch(getData({ shopId }));
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const disable = async (id) => {
     try {
-      await categoryService.delete(id);
-      getDataFromDatabase();
+      dispatch(remove({ id }));
     } catch (error) {
       console.log(error);
     }
@@ -51,27 +47,16 @@ function CategoryManager() {
 
   const restore = async (id) => {
     try {
-      await categoryService.restore(id);
-      getDataFromDatabase();
+      dispatch(restoreCategory({ id }));
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleChangeCategoryName = (e) => {
-    setNewCategoryName(e.target.value);
-  };
-
   const create = async () => {
     try {
-      const category = {
-        name: newCategoryName,
-        shopId: shopId,
-        status: 1,
-      };
-
-      await categoryService.create(category);
-      getDataFromDatabase();
+      setCategoryEmp({ ...categoryEmp, id: 0, status: 1 });
+      dispatch(add({ category: categoryEmp }));
     } catch (error) {
       console.log(error);
     }
@@ -81,26 +66,13 @@ function CategoryManager() {
 
   const edit = async () => {
     try {
-      const category = {
-        id: idCategoryToEdit,
-        name: categoryNameToEdit,
-        shopId: shopId,
-        status: 1,
-      };
-      if (category.name) {
-        await categoryService.update(idCategoryToEdit, category);
-        getDataFromDatabase();
-      }
+      dispatch(update({ id: categoryEmp.id, category: categoryEmp }));
     } catch (error) {
       console.log(error);
     }
 
     setShowEdit(false);
   };
-
-  useEffect(() => {
-    getDataFromDatabase();
-  }, []);
 
   return (
     <div className="container">
@@ -133,7 +105,7 @@ function CategoryManager() {
                         variant="primary"
                         style={{ marginRight: 5 }}
                         onClick={() => {
-                          handleShowEdit(item.id);
+                          handleShowEdit(item);
                         }}
                       >
                         Edit
@@ -172,12 +144,19 @@ function CategoryManager() {
           <Modal.Title>Let create a category</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
+          <Form
+            onSubmit={(e) => {
+              e.preventDefault();
+              create();
+            }}
+          >
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Category name</Form.Label>
               <Form.Control
-                value={newCategoryName}
-                onChange={handleChangeCategoryName}
+                value={categoryEmp.name}
+                onChange={(e) => {
+                  setCategoryEmp({ ...categoryEmp, name: e.target.value });
+                }}
                 type="text"
                 placeholder=""
                 required
@@ -199,14 +178,20 @@ function CategoryManager() {
           <Modal.Title>Let create a category</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
+          <Form
+            onSubmit={(e) => {
+              e.preventDefault();
+              edit();
+            }}
+          >
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Category name</Form.Label>
               <Form.Control
                 onChange={(e) => {
-                  setCategoryNameToEdit(e.target.value);
+                  setCategoryEmp({ ...categoryEmp, name: e.target.value });
                 }}
                 type="text"
+                value={categoryEmp.name}
                 placeholder=""
                 autoFocus
                 required

@@ -7,17 +7,20 @@ import {
 import { getData as getProducts, setData as setProducts } from "./productSlice";
 import { getData as getUsers, setData as setUsers } from "./userSlice";
 import { clear } from "./cartSlice";
+
 export const login = createAsyncThunk(
   "auth/login",
-  async ({ email, password, dispatch }, thunkAPI) => {
+  async ({ email, password, dispatch, navigate }, thunkAPI) => {
     try {
       const response = await loginService.login(email, password);
-
       localStorage.setItem("accessToken", response.data.accessToken);
       localStorage.setItem("currentUser", JSON.stringify(response.data.user));
       dispatch(getCategories({ shopId: response.data.shop.id }));
       dispatch(getProducts({ shopId: response.data.shop.id }));
-      dispatch(getUsers({ shopId: response.data.shop.id }));
+      if (response.data.user.role === "ROLE_ADMIN") {
+        dispatch(getUsers({ shopId: response.data.shop.id }));
+      }
+      navigate("/app");
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
@@ -34,7 +37,9 @@ export const refresh = createAsyncThunk(
       localStorage.setItem("currentUser", JSON.stringify(response.data.user));
       dispatch(getCategories({ shopId: response.data.shop.id }));
       dispatch(getProducts({ shopId: response.data.shop.id }));
-      dispatch(getUsers({ shopId: response.data.shop.id }));
+      if (response.data.user.role === "ROLE_ADMIN") {
+        dispatch(getUsers({ shopId: response.data.shop.id }));
+      }
       navigate("/app");
       return response.data;
     } catch (error) {

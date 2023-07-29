@@ -15,6 +15,7 @@ function SaleInterface() {
   const categoryData = useSelector((state) => state?.category?.data);
 
   const [barcode, setBarcode] = useState("");
+
   const [filter, setFilter] = useState({
     categoryId: 0,
     searchText: "",
@@ -34,8 +35,8 @@ function SaleInterface() {
     );
     if (product && barcode !== "") {
       dispatch(add(product));
-      setBarcode("");
     }
+    setBarcode("");
   };
 
   if (error) {
@@ -109,6 +110,8 @@ function SaleInterface() {
                     onChange={(e) => {
                       setBarcode(e.target.value);
                     }}
+                    name="barcode-input"
+                    id="barcode-input"
                     placeholder="Scan barcode here..."
                     aria-describedby="barcode-input"
                   />

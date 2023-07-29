@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
 function SideBar() {
+  const shop = useSelector((state) => state.auth.currentUser?.shop.name);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userRole = useSelector((state) => state.auth.currentUser?.user.role);
@@ -22,6 +23,7 @@ function SideBar() {
   return (
     <>
       <Navbar
+        fixed="top"
         expand={false}
         className="bg-body-tertiary mb-3"
         style={{
@@ -41,7 +43,7 @@ function SideBar() {
                   fontWeight: "bold",
                 }}
               >
-                FAST SALE
+                {shop ? shop.toUpperCase() : "FAST SALE"}
               </h1>
             </Link>
           </Navbar.Brand>

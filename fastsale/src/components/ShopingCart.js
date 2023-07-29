@@ -6,8 +6,21 @@ import Form from "react-bootstrap/Form";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import orderService from "./../service/orderService";
+import Nofitication from "./Nofitication";
 
 function ShopingCart() {
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const handleShowToast = (message) => {
+    setShowToast(true);
+    setToastMessage(message);
+    setTimeout(() => {
+      setShowToast(false);
+      setToastMessage("");
+    }, 3000);
+  };
+
   const cartData = useSelector((state) => state.cart.data);
   const user = useSelector((state) => state.auth.currentUser?.user);
   const [amount, setAmount] = useState(0);
@@ -54,7 +67,7 @@ function ShopingCart() {
 
       const res = await orderService.create(order);
       if (res.status === 201) {
-        alert("Order placed successfully");
+        handleShowToast("Checkout success !");
         dispatch(clear());
       }
     } catch (error) {
@@ -138,6 +151,12 @@ function ShopingCart() {
           CheckOut
         </Button>
       </div>
+      <Nofitication
+        bg="success"
+        show={showToast}
+        onClose={() => setShowToast(false)}
+        message={toastMessage}
+      />
     </div>
   );
 }

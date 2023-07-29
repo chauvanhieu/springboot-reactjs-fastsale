@@ -9,13 +9,15 @@ function Application() {
   return (
     <>
       <SideBar />
-      <Routes>
-        <Route path="/product" element={<ProductManager />} />
-        <Route path="/order" element={<OrderManager />} />
-        <Route path="/category" element={<CategoryManager />} />
-        <Route path="/user" element={<UserManager />} />
-        <Route path="/" element={<SaleInterface />} />
-      </Routes>
+      <div style={{ marginTop: "12vh" }}>
+        <Routes>
+          <Route path="/product" element={<ProductManager />} />
+          <Route path="/order" element={<OrderManager />} />
+          <Route path="/category" element={<CategoryManager />} />
+          <Route path="/user" element={<UserManager />} />
+          <Route path="/" element={<SaleInterface />} />
+        </Routes>
+      </div>
     </>
   );
 }

@@ -4,6 +4,7 @@ import productReducer from "./productSlice";
 import categoryReducer from "./categorySlice";
 import userSlice from "./userSlice";
 import cartSlice from "./cartSlice";
+
 export default configureStore({
   reducer: {
     auth: authReducer,

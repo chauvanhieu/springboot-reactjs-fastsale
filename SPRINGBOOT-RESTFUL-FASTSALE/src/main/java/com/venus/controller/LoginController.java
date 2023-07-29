@@ -79,8 +79,11 @@ public class LoginController {
 	public ResponseEntity<?> remember(@RequestBody TokenRequest item) {
 		try {
 			if (item.getToken() != "" && jwtService.validateTokenLogin(item.getToken())) {
+
 				String email = jwtService.getEmailFromToken(item.getToken());
+
 				Optional<User> user = userRepository.findByEmail(email);
+
 				if (user.isPresent()) {
 
 					String newToken = jwtService.generateTokenLogin(email);

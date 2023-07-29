@@ -2,13 +2,43 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 import Table from "react-bootstrap/Table";
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
-import { getData } from "../redux/productSlice";
-import { getData as setCategoryData } from "../redux/categorySlice";
-import productService from "./../service/productService";
+import InputGroup from "react-bootstrap/InputGroup";
+import Pagination from "react-bootstrap/Pagination";
 
+import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
+import {
+  add,
+  remove,
+  restore as restoreProduct,
+  update,
+} from "../redux/productSlice";
+import Nofitication from "./Nofitication";
 function ProductManager() {
+  const categoryData = useSelector((state) => state.category?.data);
+  const productData = useSelector((state) => state.product.data);
+  let active = 2;
+  let pages = [];
+  for (let number = 1; number <= 5; number++) {
+    pages.push(
+      <Pagination.Item key={number} active={number === active}>
+        {number}
+      </Pagination.Item>
+    );
+  }
+
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const handleShowToast = (message) => {
+    setShowToast(true);
+    setToastMessage(message);
+    setTimeout(() => {
+      setShowToast(false);
+      setToastMessage("");
+    }, 3000);
+  };
+
   const [show, setShow] = useState(false);
 
   const handleClose = () => {
@@ -21,14 +51,16 @@ function ProductManager() {
 
   const shopId = useSelector((state) => state.auth.currentUser?.shop.id);
 
-  const categoryData = useSelector((state) => state.category?.data);
-
-  const loading = useSelector((state) => state.auth.loading);
-
   const error = useSelector((state) => state.auth.error);
+
   const dispatch = useDispatch();
 
-  const productData = useSelector((state) => state.product.data);
+  const [filter, setFilter] = useState({
+    searchText: "",
+    categoryId: 0,
+    status: 2,
+  });
+
   const [productToCreate, setProductToCreate] = useState({
     name: "",
     categoryId: 0,
@@ -50,31 +82,6 @@ function ProductManager() {
     shopId: shopId,
   });
 
-  useEffect(() => {
-    getDataFromDatabase();
-    getCategoryDataFromDatabase();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  if (error) {
-    return (
-      <>
-        <center>
-          <h1>LỖI...</h1>
-        </center>
-      </>
-    );
-  }
-
-  if (loading) {
-    return (
-      <>
-        <center>
-          <h1>Đang đăng nhập....</h1>
-        </center>
-      </>
-    );
-  }
-
   const handleChangeProductToCreate = (e) => {
     const { name, value } = e.target;
     setProductToCreate((prevFormData) => ({
@@ -91,6 +98,15 @@ function ProductManager() {
     }));
   };
 
+  const handleChangeFilter = (e) => {
+    const { name, value } = e.target;
+    setFilter((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+    console.log(filter);
+  };
+
   const handleCloseEdit = () => setShowEdit(false);
 
   const handleShowEdit = (item) => {
@@ -98,26 +114,9 @@ function ProductManager() {
     setProductToEdit(item);
   };
 
-  const getDataFromDatabase = async () => {
-    try {
-      dispatch(getData({ shopId }));
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const getCategoryDataFromDatabase = async () => {
-    try {
-      dispatch(setCategoryData({ shopId }));
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const disable = async (id) => {
     try {
-      await productService.delete(id);
-      getDataFromDatabase();
+      dispatch(remove({ id }));
     } catch (error) {
       console.log(error);
     }
@@ -125,8 +124,7 @@ function ProductManager() {
 
   const restore = async (id) => {
     try {
-      await productService.restore(id);
-      getDataFromDatabase();
+      dispatch(restoreProduct({ id }));
     } catch (error) {
       console.log(error);
     }
@@ -134,8 +132,8 @@ function ProductManager() {
 
   const create = async () => {
     try {
-      await productService.create(productToCreate);
-      getDataFromDatabase();
+      dispatch(add({ product: productToCreate }));
+      handleShowToast("Created !");
     } catch (error) {
       console.log(error);
     }
@@ -145,8 +143,8 @@ function ProductManager() {
 
   const edit = async () => {
     try {
-      await productService.update(productToEdit.id, productToEdit);
-      getDataFromDatabase();
+      dispatch(update({ id: productToEdit.id, product: productToEdit }));
+      handleShowToast("Updated !");
     } catch (error) {
       console.log(error);
     }
@@ -154,86 +152,172 @@ function ProductManager() {
     setShowEdit(false);
   };
 
+  if (error) {
+    return (
+      <>
+        <center>
+          <h1>LỖI...</h1>
+        </center>
+      </>
+    );
+  }
+
   return (
     <div className="container-fluid">
-      <div className="product-create">
-        <Button variant="primary" onClick={handleShow}>
-          Create a new Category
-        </Button>
+      <Nofitication
+        bg="success"
+        show={showToast}
+        onClose={() => setShowToast(false)}
+        message={toastMessage}
+      />
+
+      <div className="row">
+        <div className="product-filter col-3">
+          <InputGroup className="mb-3">
+            <InputGroup.Text>Search</InputGroup.Text>
+            <Form.Control
+              onChange={handleChangeFilter}
+              name="searchText"
+              value={filter.searchText}
+              placeholder="Find something..."
+            />
+          </InputGroup>
+          <InputGroup className="mb-3">
+            <InputGroup.Text>Category</InputGroup.Text>
+            <Form.Select
+              onChange={handleChangeFilter}
+              name="categoryId"
+              defaultValue={filter.categoryId}
+            >
+              <option value="0">All categories</option>
+              {categoryData ? (
+                categoryData.map((item) => {
+                  if (item.status === 1)
+                    return (
+                      <option key={item.id} value={item.id}>
+                        {item.name}
+                      </option>
+                    );
+                })
+              ) : (
+                <></>
+              )}
+            </Form.Select>
+          </InputGroup>
+          <InputGroup className="mb-3">
+            <InputGroup.Text>Status</InputGroup.Text>
+            <Form.Select
+              onChange={handleChangeFilter}
+              name="status"
+              defaultValue={filter.status}
+            >
+              <option value="2">Using/Disable</option>
+              <option value="1">Using</option>
+              <option value="0">Disable</option>
+            </Form.Select>
+          </InputGroup>
+          <InputGroup className="mb-3">
+            <Pagination>{pages}</Pagination>
+          </InputGroup>
+        </div>
+        <div className="product-list col-9">
+          <div className="product-create">
+            <Button variant="primary" onClick={handleShow}>
+              Create a new Category
+            </Button>
+          </div>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Product name</th>
+                <th>Category name</th>
+                <th>Price</th>
+                <th>Import price</th>
+                <th>Available</th>
+                <th>Barcode</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {productData ? (
+                productData.map((item) => {
+                  if (
+                    (filter.searchText === "" ||
+                      item.name
+                        .toLowerCase()
+                        .indexOf(filter.searchText.toLowerCase()) !== -1 ||
+                      item.barcode
+                        .toLowerCase()
+                        .indexOf(filter.searchText.toLowerCase()) !== -1) &&
+                    (filter.categoryId == 0 ||
+                      item.categoryId == filter.categoryId) &&
+                    (filter.status == 2 || filter.status == item.status)
+                  )
+                    return (
+                      <tr key={item.id}>
+                        <td>{item.id}</td>
+                        <td>{item.name}</td>
+                        <td>{item.categoryName}</td>
+                        <td>{item.price}</td>
+                        <td>{item.importPrice}</td>
+                        <td>{item.available}</td>
+                        <td>{item.barcode}</td>
+                        <td>{item.status === 1 ? "Using" : "Disabled"}</td>
+                        <td>
+                          <Button
+                            variant="primary"
+                            style={{ marginRight: 5 }}
+                            onClick={() => {
+                              handleShowEdit(item);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          {item.status === 1 ? (
+                            <Button
+                              variant="danger"
+                              onClick={() => {
+                                disable(item.id);
+                              }}
+                            >
+                              Disable
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="success"
+                              onClick={() => {
+                                restore(item.id);
+                              }}
+                            >
+                              Restore
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                })
+              ) : (
+                <tr></tr>
+              )}
+            </tbody>
+          </Table>
+        </div>
       </div>
-      <div className="product-li">
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Product name</th>
-              <th>Category name</th>
-              <th>Price</th>
-              <th>Import price</th>
-              <th>Available</th>
-              <th>Barcode</th>
-              <th>Status</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {productData ? (
-              productData.map((item) => {
-                return (
-                  <tr key={item.id}>
-                    <td>{item.id}</td>
-                    <td>{item.name}</td>
-                    <td>{item.categoryName}</td>
-                    <td>{item.price}</td>
-                    <td>{item.importPrice}</td>
-                    <td>{item.available}</td>
-                    <td>{item.barcode}</td>
-                    <td>{item.status === 1 ? "Using" : "Disabled"}</td>
-                    <td>
-                      <Button
-                        variant="primary"
-                        style={{ marginRight: 5 }}
-                        onClick={() => {
-                          handleShowEdit(item);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      {item.status === 1 ? (
-                        <Button
-                          variant="danger"
-                          onClick={() => {
-                            disable(item.id);
-                          }}
-                        >
-                          Disable
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="success"
-                          onClick={() => {
-                            restore(item.id);
-                          }}
-                        >
-                          Restore
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr></tr>
-            )}
-          </tbody>
-        </Table>
-      </div>
+
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Let create a product</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
+          <Form
+            id="create-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              create();
+            }}
+          >
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Product name</Form.Label>
               <Form.Control
@@ -246,6 +330,7 @@ function ProductManager() {
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Chose a category</Form.Label>
               <Form.Select
+                required
                 onChange={(e) => {
                   setProductToCreate({
                     ...productToCreate,
@@ -266,7 +351,7 @@ function ProductManager() {
                 )}
               </Form.Select>
             </Form.Group>
-            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+            <Form.Group className="mb-3">
               <Form.Label>Price</Form.Label>
               <Form.Control
                 onChange={handleChangeProductToCreate}
@@ -275,7 +360,7 @@ function ProductManager() {
                 name="price"
               />
             </Form.Group>
-            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+            <Form.Group className="mb-3">
               <Form.Label>Import price</Form.Label>
               <Form.Control
                 onChange={handleChangeProductToCreate}
@@ -284,7 +369,7 @@ function ProductManager() {
                 name="importPrice"
               />
             </Form.Group>
-            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+            <Form.Group className="mb-3">
               <Form.Label>Available</Form.Label>
               <Form.Control
                 onChange={handleChangeProductToCreate}
@@ -293,7 +378,7 @@ function ProductManager() {
                 name="available"
               />
             </Form.Group>
-            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+            <Form.Group className="mb-3">
               <Form.Label>Barcode</Form.Label>
               <Form.Control
                 onChange={handleChangeProductToCreate}
@@ -331,6 +416,7 @@ function ProductManager() {
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Chose a category</Form.Label>
               <Form.Select
+                defaultValue={productToEdit.categoryId}
                 onChange={(e) => {
                   setProductToEdit({
                     ...productToEdit,
@@ -341,11 +427,7 @@ function ProductManager() {
                 {categoryData ? (
                   categoryData.map((item) => {
                     return (
-                      <option
-                        key={item.id}
-                        value={item.id}
-                        selected={item.id === productToEdit.categoryId}
-                      >
+                      <option key={item.id} value={item.id}>
                         {item.name}
                       </option>
                     );

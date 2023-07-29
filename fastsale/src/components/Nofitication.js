@@ -1,24 +1,26 @@
+import React from "react";
 import Toast from "react-bootstrap/Toast";
 import ToastContainer from "react-bootstrap/ToastContainer";
 
-function Nofitication(props) {
+const Nofitication = (props) => {
   return (
-    <>
-      <ToastContainer className="p-3" position="top-end" style={{ zIndex: 1 }}>
-        <Toast bg="primary" animation={true}>
-          <Toast.Header closeButton={true}>
-            <img
-              src="holder.js/20x20?text=%20"
-              className="rounded me-2"
-              alt=""
-            />
-            <strong className="me-auto">Nofitication</strong>
-          </Toast.Header>
-          <Toast.Body>{props.message}</Toast.Body>
-        </Toast>
-      </ToastContainer>
-    </>
+    <ToastContainer position="bottom-end" style={{ margin: 20 }}>
+      <Toast
+        bg={props.bg}
+        show={props.show}
+        onClose={props.onClose}
+        delay={3000}
+        autohide
+      >
+        <Toast.Header>
+          <strong className="me-auto">Nofitication</strong>
+        </Toast.Header>
+        <Toast.Body>
+          <h3>{props.message}</h3>
+        </Toast.Body>
+      </Toast>
+    </ToastContainer>
   );
-}
+};
 
 export default Nofitication;

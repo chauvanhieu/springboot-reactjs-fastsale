@@ -2,6 +2,8 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 import Table from "react-bootstrap/Table";
+import InputGroup from "react-bootstrap/InputGroup";
+
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import userService from "./../service/userService";
@@ -16,6 +18,8 @@ function UserManager() {
   const handleShow = () => setShow(true);
 
   const [showEdit, setShowEdit] = useState(false);
+
+  const [searchText, setSearchText] = useState("");
 
   const shopId = useSelector((state) => state.auth.currentUser?.user.shopId);
 
@@ -121,6 +125,16 @@ function UserManager() {
   return (
     <div className="container-fluid">
       <div className="user-create">
+        <InputGroup className="mb-3">
+          <InputGroup.Text>Search</InputGroup.Text>
+          <Form.Control
+            value={searchText}
+            onChange={(e) => {
+              setSearchText(e.target.value);
+            }}
+            placeholder="Find something..."
+          />
+        </InputGroup>
         <Button variant="primary" onClick={handleShow}>
           Create a new User
         </Button>
@@ -140,45 +154,53 @@ function UserManager() {
           <tbody>
             {userData
               ? userData.map((item) => {
-                  return (
-                    <tr key={item.id}>
-                      <td>{item.id}</td>
-                      <td>{item.name}</td>
-                      <td>{item.email}</td>
-                      <td>{item.role}</td>
-                      <td>{item.status === 1 ? "Using" : "Disabled"}</td>
-                      <td>
-                        <Button
-                          variant="primary"
-                          style={{ marginRight: 5 }}
-                          onClick={() => {
-                            handleShowEdit(item);
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        {item.status === 1 ? (
+                  if (
+                    item.name
+                      .toLowerCase()
+                      .indexOf(searchText.toLowerCase()) !== -1 ||
+                    item.email
+                      .toLowerCase()
+                      .indexOf(searchText.toLowerCase()) !== -1
+                  )
+                    return (
+                      <tr key={item.id}>
+                        <td>{item.id}</td>
+                        <td>{item.name}</td>
+                        <td>{item.email}</td>
+                        <td>{item.role}</td>
+                        <td>{item.status === 1 ? "Using" : "Disabled"}</td>
+                        <td>
                           <Button
-                            variant="danger"
+                            variant="primary"
+                            style={{ marginRight: 5 }}
                             onClick={() => {
-                              disable(item.id);
+                              handleShowEdit(item);
                             }}
                           >
-                            Disable
+                            Edit
                           </Button>
-                        ) : (
-                          <Button
-                            variant="success"
-                            onClick={() => {
-                              restore(item.id);
-                            }}
-                          >
-                            Restore
-                          </Button>
-                        )}
-                      </td>
-                    </tr>
-                  );
+                          {item.status === 1 ? (
+                            <Button
+                              variant="danger"
+                              onClick={() => {
+                                disable(item.id);
+                              }}
+                            >
+                              Disable
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="success"
+                              onClick={() => {
+                                restore(item.id);
+                              }}
+                            >
+                              Restore
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    );
                 })
               : ""}
           </tbody>
