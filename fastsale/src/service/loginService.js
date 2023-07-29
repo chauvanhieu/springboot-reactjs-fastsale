@@ -22,6 +22,17 @@ const loginService = {
       throw error; // Ném lại lỗi để xử lý tiếp (nếu cần)
     }
   },
+  forgotPassword: async (email) => {
+    try {
+      const res = await AxiosService.post("/forgot-password", {
+        email,
+      });
+      return res;
+    } catch (error) {
+      console.error("Error logging in:", error);
+      throw error; // Ném lại lỗi để xử lý tiếp (nếu cần)
+    }
+  },
 };
 
 export default loginService;

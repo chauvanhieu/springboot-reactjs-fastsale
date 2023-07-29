@@ -4,7 +4,7 @@ import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
 import { useDispatch, useSelector } from "react-redux";
 import { login as handleLogin } from "../redux/authSlice";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -71,6 +71,7 @@ function LoginPage() {
                 placeholder="Password"
               />
             </Form.Group>
+            <Link to="/home/forgot-password">Forgot password?</Link>
             <center>
               <Button
                 onClick={login}

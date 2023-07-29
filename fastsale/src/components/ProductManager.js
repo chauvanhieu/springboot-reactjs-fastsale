@@ -13,15 +13,32 @@ import {
   restore as restoreProduct,
   update,
 } from "../redux/productSlice";
+
 import Nofitication from "./Nofitication";
 function ProductManager() {
   const categoryData = useSelector((state) => state.category?.data);
   const productData = useSelector((state) => state.product.data);
-  let active = 2;
-  let pages = [];
-  for (let number = 1; number <= 5; number++) {
-    pages.push(
-      <Pagination.Item key={number} active={number === active}>
+  const [page, setPage] = useState(1);
+
+  const limit = 10;
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+
+  let items = [];
+
+  for (
+    let number = 1;
+    number <= Math.ceil(productData.length / limit);
+    number++
+  ) {
+    items.push(
+      <Pagination.Item
+        onClick={() => {
+          setPage(number);
+        }}
+        key={number}
+        active={number === page}
+      >
         {number}
       </Pagination.Item>
     );
@@ -104,7 +121,6 @@ function ProductManager() {
       ...prevFormData,
       [name]: value,
     }));
-    console.log(filter);
   };
 
   const handleCloseEdit = () => setShowEdit(false);
@@ -216,9 +232,7 @@ function ProductManager() {
               <option value="0">Disable</option>
             </Form.Select>
           </InputGroup>
-          <InputGroup className="mb-3">
-            <Pagination>{pages}</Pagination>
-          </InputGroup>
+          <Pagination>{items}</Pagination>
         </div>
         <div className="product-list col-9">
           <div className="product-create">
@@ -242,7 +256,7 @@ function ProductManager() {
             </thead>
             <tbody>
               {productData ? (
-                productData.map((item) => {
+                productData.slice(startIndex, endIndex).map((item) => {
                   if (
                     (filter.searchText === "" ||
                       item.name
