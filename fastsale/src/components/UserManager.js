@@ -5,9 +5,15 @@ import Table from "react-bootstrap/Table";
 import InputGroup from "react-bootstrap/InputGroup";
 
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
-import userService from "./../service/userService";
-import { setData } from "../redux/userSlice";
+import { useState } from "react";
+import {
+  add,
+  remove,
+  update,
+  restore as restoreUser,
+} from "../redux/userSlice";
+import Nofitication from "./Nofitication";
+import { Pagination } from "react-bootstrap";
 function UserManager() {
   const [show, setShow] = useState(false);
 
@@ -19,13 +25,34 @@ function UserManager() {
 
   const [showEdit, setShowEdit] = useState(false);
 
-  const [searchText, setSearchText] = useState("");
-
   const shopId = useSelector((state) => state.auth.currentUser?.user.shopId);
 
   const userData = useSelector((state) => state.user?.data);
 
-  const [userToCreate, setUserToCreate] = useState({
+  const [page, setPage] = useState(1);
+
+  const limit = 10;
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+
+  let items = [];
+
+  for (let number = 1; number <= Math.ceil(userData.length / limit); number++) {
+    items.push(
+      <Pagination.Item
+        onClick={() => {
+          setPage(number);
+        }}
+        key={number}
+        active={number === page}
+      >
+        {number}
+      </Pagination.Item>
+    );
+  }
+
+  const [userEmp, setUserEmp] = useState({
+    id: -1,
     name: "",
     email: "",
     password: "",
@@ -34,27 +61,20 @@ function UserManager() {
     status: 1,
   });
 
-  const [userToEdit, setUserToEdit] = useState({
-    id: 0,
-    name: "",
-    email: "",
-    password: "",
-    shopId: shopId,
-    role: "",
-    status: 1,
+  const [filter, setFilter] = useState({
+    searchText: "",
+    status: 2,
   });
-
-  const handleChangeUserToCreate = (e) => {
+  const handleChangeFilter = (e) => {
     const { name, value } = e.target;
-    setUserToCreate((prevFormData) => ({
+    setFilter((prevFormData) => ({
       ...prevFormData,
       [name]: value,
     }));
   };
-
-  const handleChangeUserToEdit = (e) => {
+  const handleChangeUserEmp = (e) => {
     const { name, value } = e.target;
-    setUserToEdit((prevFormData) => ({
+    setUserEmp((prevFormData) => ({
       ...prevFormData,
       [name]: value,
     }));
@@ -64,28 +84,13 @@ function UserManager() {
 
   const handleShowEdit = (item) => {
     setShowEdit(true);
-    setUserToEdit(item);
+    setUserEmp(item);
   };
   const dispatch = useDispatch();
 
-  const getDataFromDatabase = async () => {
-    try {
-      const res = await userService.findAll({ shopId });
-      dispatch(setData(res.data?.data));
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    getDataFromDatabase();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const disable = async (id) => {
     try {
-      await userService.delete(id);
-      getDataFromDatabase();
+      dispatch(remove({ id }));
     } catch (error) {
       console.log(error);
     }
@@ -93,8 +98,7 @@ function UserManager() {
 
   const restore = async (id) => {
     try {
-      await userService.restore(id);
-      getDataFromDatabase();
+      dispatch(restoreUser({ id }));
     } catch (error) {
       console.log(error);
     }
@@ -102,10 +106,11 @@ function UserManager() {
 
   const create = async () => {
     try {
-      await userService.create(userToCreate);
-      console.log(userToCreate);
-      getDataFromDatabase();
+      setUserEmp({ ...userEmp, id: 0, status: 1 });
+      dispatch(add({ user: userEmp }));
+      handleShowToast("Created !");
     } catch (error) {
+      handleShowToast("Create failed !");
       console.log(error);
     }
 
@@ -114,97 +119,133 @@ function UserManager() {
 
   const edit = async () => {
     try {
-      await userService.update(userToEdit.id, userToEdit);
-      getDataFromDatabase();
+      dispatch(update({ id: Number(userEmp.id), user: userEmp }));
+      handleShowToast("Updated !");
     } catch (error) {
+      handleShowToast("Update failed !");
       console.log(error);
     }
 
     setShowEdit(false);
   };
+
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const handleShowToast = (message) => {
+    setShowToast(true);
+    setToastMessage(message);
+    setTimeout(() => {
+      setShowToast(false);
+      setToastMessage("");
+    }, 3000);
+  };
+
   return (
     <div className="container-fluid">
-      <div className="user-create">
-        <InputGroup className="mb-3">
-          <InputGroup.Text>Search</InputGroup.Text>
-          <Form.Control
-            value={searchText}
-            onChange={(e) => {
-              setSearchText(e.target.value);
-            }}
-            placeholder="Find something..."
-          />
-        </InputGroup>
-        <Button variant="primary" onClick={handleShow}>
-          Create a new User
-        </Button>
-      </div>
-      <div className="user-list">
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>User name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>status</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {userData
-              ? userData.map((item) => {
-                  if (
-                    item.name
-                      .toLowerCase()
-                      .indexOf(searchText.toLowerCase()) !== -1 ||
-                    item.email
-                      .toLowerCase()
-                      .indexOf(searchText.toLowerCase()) !== -1
-                  )
-                    return (
-                      <tr key={item.id}>
-                        <td>{item.id}</td>
-                        <td>{item.name}</td>
-                        <td>{item.email}</td>
-                        <td>{item.role}</td>
-                        <td>{item.status === 1 ? "Using" : "Disabled"}</td>
-                        <td>
-                          <Button
-                            variant="primary"
-                            style={{ marginRight: 5 }}
-                            onClick={() => {
-                              handleShowEdit(item);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          {item.status === 1 ? (
+      <Nofitication
+        bg="success"
+        show={showToast}
+        onClose={() => setShowToast(false)}
+        message={toastMessage}
+      />
+      <div className="row">
+        <div className="user-filter col-3">
+          <InputGroup className="mb-3">
+            <InputGroup.Text>Search</InputGroup.Text>
+            <Form.Control
+              value={filter.searchText}
+              name="searchText"
+              onChange={handleChangeFilter}
+              placeholder="Find something..."
+            />
+          </InputGroup>
+          <InputGroup className="mb-3">
+            <InputGroup.Text>Status</InputGroup.Text>
+            <Form.Select
+              onChange={handleChangeFilter}
+              name="status"
+              defaultValue={filter.status}
+            >
+              <option value="2">Using/Disable</option>
+              <option value="1">Using</option>
+              <option value="0">Disable</option>
+            </Form.Select>
+          </InputGroup>
+          <Pagination>{items}</Pagination>
+        </div>
+        <div className="user-list col-9">
+          <Button variant="primary" onClick={handleShow}>
+            Create a new User
+          </Button>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>User name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {userData
+                ? userData.slice(startIndex, endIndex).map((item) => {
+                    if (
+                      (filter.searchText === "" ||
+                        item.name
+                          .toLowerCase()
+                          .indexOf(filter.searchText.toLowerCase()) !== -1 ||
+                        item.email
+                          .toLowerCase()
+                          .indexOf(filter.searchText.toLowerCase()) !== -1) &&
+                      (filter.status == 2 || filter.status == item.status)
+                    )
+                      return (
+                        <tr key={item.id}>
+                          <td>{item.id}</td>
+                          <td>{item.name}</td>
+                          <td>{item.email}</td>
+                          <td>{item.role}</td>
+                          <td>{item.status === 1 ? "Using" : "Disabled"}</td>
+                          <td>
                             <Button
-                              variant="danger"
+                              variant="primary"
+                              style={{ marginRight: 5 }}
                               onClick={() => {
-                                disable(item.id);
+                                handleShowEdit(item);
                               }}
                             >
-                              Disable
+                              Edit
                             </Button>
-                          ) : (
-                            <Button
-                              variant="success"
-                              onClick={() => {
-                                restore(item.id);
-                              }}
-                            >
-                              Restore
-                            </Button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                })
-              : ""}
-          </tbody>
-        </Table>
+                            {item.status === 1 ? (
+                              <Button
+                                variant="danger"
+                                onClick={() => {
+                                  disable(item.id);
+                                }}
+                              >
+                                Disable
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="success"
+                                onClick={() => {
+                                  restore(item.id);
+                                }}
+                              >
+                                Restore
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                  })
+                : ""}
+            </tbody>
+          </Table>
+        </div>
       </div>
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
@@ -215,7 +256,7 @@ function UserManager() {
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>User fullname</Form.Label>
               <Form.Control
-                onChange={handleChangeUserToCreate}
+                onChange={handleChangeUserEmp}
                 type="text"
                 required
                 name="name"
@@ -225,8 +266,8 @@ function UserManager() {
               <Form.Label>User role</Form.Label>
               <Form.Select
                 onChange={(e) => {
-                  setUserToCreate({
-                    ...userToCreate,
+                  setUserEmp({
+                    ...userEmp,
                     role: e.target.value,
                   });
                 }}
@@ -239,7 +280,7 @@ function UserManager() {
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Email</Form.Label>
               <Form.Control
-                onChange={handleChangeUserToCreate}
+                onChange={handleChangeUserEmp}
                 type="email"
                 required
                 name="email"
@@ -248,7 +289,7 @@ function UserManager() {
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Password</Form.Label>
               <Form.Control
-                onChange={handleChangeUserToCreate}
+                onChange={handleChangeUserEmp}
                 type="password"
                 required
                 name="password"
@@ -274,8 +315,8 @@ function UserManager() {
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>User fullname</Form.Label>
               <Form.Control
-                value={userToEdit.name}
-                onChange={handleChangeUserToEdit}
+                value={userEmp.name}
+                onChange={handleChangeUserEmp}
                 type="text"
                 required
                 name="name"
@@ -284,13 +325,9 @@ function UserManager() {
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>User role</Form.Label>
               <Form.Select
-                value={userToEdit.role}
-                onChange={(e) => {
-                  setUserToEdit({
-                    ...userToEdit,
-                    role: e.target.value,
-                  });
-                }}
+                name="role"
+                value={userEmp.role}
+                onChange={handleChangeUserEmp}
               >
                 <option value="">Chose a role for user</option>
                 <option value="ROLE_USER">ROLE_USER</option>
@@ -300,8 +337,8 @@ function UserManager() {
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Email</Form.Label>
               <Form.Control
-                value={userToEdit.email}
-                onChange={handleChangeUserToEdit}
+                value={userEmp.email}
+                onChange={handleChangeUserEmp}
                 type="email"
                 required
                 name="email"
@@ -310,7 +347,7 @@ function UserManager() {
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Password</Form.Label>
               <Form.Control
-                onChange={handleChangeUserToEdit}
+                onChange={handleChangeUserEmp}
                 type="password"
                 required
                 name="password"

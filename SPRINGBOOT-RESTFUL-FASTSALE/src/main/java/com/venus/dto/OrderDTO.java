@@ -11,6 +11,7 @@ public class OrderDTO {
 	private int id;
 	private int shopId;
 	private int userId;
+	private String username;
 	private double price;
 	private Date createdAt;
 	private String orderType;

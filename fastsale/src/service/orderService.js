@@ -1,32 +1,30 @@
 import AxiosService from "./axiosService";
 
 const orderService = {
-  // url: http://localhost:8080/api/orders
   findAll: async ({
-    page = 1,
-    limit = 999999,
-    orderBy = "desc",
-    sortBy = "id",
-    minPrice,
-    maxPrice,
-    shopId = 0,
-    startDate,
-    endDate,
+    page,
+    limit,
+    order_by,
+    sort_by,
+    min_price,
+    max_price,
+    shop_id,
+    start_date,
+    end_date,
   }) => {
+    const params = {
+      page: page || 1,
+      limit: limit || 999999,
+      order_by: order_by || "desc",
+      sort_by: sort_by || "price",
+      min_price: min_price || null,
+      max_price: max_price || null,
+      shop_id: shop_id || 0,
+      start_date,
+      end_date,
+    };
     try {
-      const res = await AxiosService.get("/api/orders", {
-        params: {
-          page,
-          limit,
-          order_by: orderBy,
-          sort_by: sortBy,
-          min_price: minPrice,
-          max_price: maxPrice,
-          shop_id: shopId,
-          start_date: startDate,
-          end_date: endDate,
-        },
-      });
+      const res = await AxiosService.get("/api/orders", params);
       return res;
     } catch (error) {
       console.error("Error fetching orders:", error);

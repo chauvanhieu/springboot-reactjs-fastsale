@@ -28,6 +28,8 @@ public class OrderConverter {
 
 	public OrderDTO toDTO(Order order) {
 		OrderDTO orderDTO = new OrderDTO();
+
+		orderDTO.setUsername(order.getUser().getName());
 		orderDTO.setId(order.getId());
 		orderDTO.setShopId(order.getShop().getId());
 		orderDTO.setUserId(order.getUser().getId());

@@ -18,7 +18,6 @@ export const add = createAsyncThunk(
   async ({ category }, thunkAPI) => {
     try {
       const response = await categoryService.create(category);
-      console.log(response);
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);

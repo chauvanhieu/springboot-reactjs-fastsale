@@ -64,7 +64,7 @@ public class OrderController {
 			@RequestParam(value = "page", defaultValue = "1") int page,
 			@RequestParam(value = "limit", defaultValue = "999999") int limit,
 			@RequestParam(value = "order_by", defaultValue = "desc") String orderBy,
-			@RequestParam(value = "sort_by", defaultValue = "id") String sortBy,
+			@RequestParam(value = "sort_by", defaultValue = "createdAt") String sortBy,
 			@RequestParam(value = "min_price", required = false) Optional<Double> minPrice,
 			@RequestParam(value = "max_price", required = false) Optional<Double> maxPrice,
 			@RequestParam(value = "shop_id", defaultValue = "0") int shopId,
@@ -90,8 +90,8 @@ public class OrderController {
 
 			Optional<Shop> shop = shopRepository.findById(shopId);
 
-			Pageable pageable = PageRequest.of(page - 1, limit, Sort.by(
-					orderBy.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy.toLowerCase()));
+			Pageable pageable = PageRequest.of(page - 1, limit,
+					Sort.by(orderBy.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy));
 
 			Page<Order> pageOrder;
 

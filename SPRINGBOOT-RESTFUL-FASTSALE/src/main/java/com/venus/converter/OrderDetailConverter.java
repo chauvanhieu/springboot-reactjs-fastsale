@@ -22,6 +22,8 @@ public class OrderDetailConverter {
 	public OrderDetailDTO toDTO(OrderDetail orderDetail) {
 		OrderDetailDTO orderDetailDTO = new OrderDetailDTO();
 		orderDetailDTO.setId(orderDetail.getId());
+		orderDetailDTO.setPrice(orderDetail.getProduct().getPrice());
+		orderDetailDTO.setProductName(orderDetail.getProduct().getName());
 		orderDetailDTO.setOrderId(orderDetail.getOrder().getId());
 		orderDetailDTO.setProductId(orderDetail.getProduct().getId());
 		orderDetailDTO.setCount(orderDetail.getCount());

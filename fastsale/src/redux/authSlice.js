@@ -4,6 +4,7 @@ import {
   getData as getCategories,
   setData as setCategories,
 } from "./categorySlice";
+import { getData as getOrders, setData as setOrders } from "./orderSlice";
 import { getData as getProducts, setData as setProducts } from "./productSlice";
 import { getData as getUsers, setData as setUsers } from "./userSlice";
 import { clear } from "./cartSlice";
@@ -16,6 +17,7 @@ export const login = createAsyncThunk(
       localStorage.setItem("accessToken", response.data.accessToken);
       localStorage.setItem("currentUser", JSON.stringify(response.data.user));
       dispatch(getCategories({ shopId: response.data.shop.id }));
+      dispatch(getOrders({ shopId: response.data.shop.id }));
       dispatch(getProducts({ shopId: response.data.shop.id }));
       if (response.data.user.role === "ROLE_ADMIN") {
         dispatch(getUsers({ shopId: response.data.shop.id }));
@@ -36,6 +38,7 @@ export const refresh = createAsyncThunk(
       localStorage.setItem("accessToken", response.data.accessToken);
       localStorage.setItem("currentUser", JSON.stringify(response.data.user));
       dispatch(getCategories({ shopId: response.data.shop.id }));
+      dispatch(getOrders({ shopId: response.data.shop.id }));
       dispatch(getProducts({ shopId: response.data.shop.id }));
       if (response.data.user.role === "ROLE_ADMIN") {
         dispatch(getUsers({ shopId: response.data.shop.id }));
@@ -57,6 +60,7 @@ export const logout = createAsyncThunk(
       localStorage.removeItem("currentUser");
       dispatch(setCategories([]));
       dispatch(setProducts([]));
+      dispatch(setOrders([]));
       dispatch(setUsers([]));
       dispatch(clear());
       navigate("/home");
