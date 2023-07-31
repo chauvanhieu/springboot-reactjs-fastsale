@@ -104,16 +104,13 @@ function SaleInterface() {
                 }}
               >
                 <InputGroup className="mb-3">
-                  <InputGroup.Text id="barcode-input">Barcode</InputGroup.Text>
+                  <InputGroup.Text>Barcode</InputGroup.Text>
                   <Form.Control
                     value={barcode}
                     onChange={(e) => {
                       setBarcode(e.target.value);
                     }}
-                    name="barcode-input"
-                    id="barcode-input"
                     placeholder="Scan barcode here..."
-                    aria-describedby="barcode-input"
                   />
                 </InputGroup>
               </Form>

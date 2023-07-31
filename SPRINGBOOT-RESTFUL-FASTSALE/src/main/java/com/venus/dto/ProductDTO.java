@@ -15,5 +15,6 @@ public class ProductDTO {
 	private int shopId;
 	private int status;
 	private String barcode;
+	private String image;
 	// Constructors, Getters and Setters
 }

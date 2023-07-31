@@ -4,20 +4,91 @@ import Modal from "react-bootstrap/Modal";
 import Table from "react-bootstrap/Table";
 import InputGroup from "react-bootstrap/InputGroup";
 import Pagination from "react-bootstrap/Pagination";
-
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import {
   add,
+  importDataFromExcel,
   remove,
   restore as restoreProduct,
   update,
 } from "../redux/productSlice";
-
+import * as XLSX from "xlsx";
 import Nofitication from "./Nofitication";
+import productService from "../service/productService";
+import { Link } from "react-router-dom";
 function ProductManager() {
   const categoryData = useSelector((state) => state.category?.data);
   const productData = useSelector((state) => state.product.data);
+  const shopId = useSelector((state) => state.auth.currentUser?.shop.id);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [rowData, setRowData] = useState({});
+  // Xử lý khi người dùng chọn tệp
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setSelectedFile(file);
+  };
+
+  // Xử lý khi người dùng nhấn nút tải lên
+  const handleUpload = () => {
+    if (selectedFile) {
+      const reader = new FileReader();
+
+      // Đọc dữ liệu từ tệp Excel khi nó đã được tải lên
+      reader.onload = (event) => {
+        const data = event.target.result;
+        const workbook = XLSX.read(data, { type: "binary" });
+
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+
+        // Chuyển đổi dữ liệu từ sheet thành mảng các đối tượng (mỗi dòng là một object)
+        const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+        // Xử lý từng dòng của dữ liệu (loại bỏ dòng tiêu đề nếu cần)
+        const rowDataObjects = [];
+
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          const [name, price, importPrice, available, barcode] = row;
+
+          // Kiểm tra hàng trống (tất cả các giá trị đều là rỗng)
+          if (name || price || importPrice || available || barcode) {
+            rowDataObjects.push({
+              name,
+              price,
+              importPrice,
+              available,
+              barcode,
+              image: "",
+              status: 1,
+              categoryId: categoryData[0].id,
+              shopId: shopId,
+            });
+          } else {
+            // Dừng vòng lặp khi gặp hàng trống
+            break;
+          }
+        }
+
+        setRowData([...rowDataObjects]);
+      };
+
+      // Đọc dữ liệu của tệp Excel dưới dạng 'binary' (dữ liệu nhị phân)
+      reader.readAsBinaryString(selectedFile);
+      handleShowToast("Get products success !");
+    } else {
+      alert("Vui lòng chọn một tệp Excel để tải lên.");
+    }
+  };
+  const importData = async () => {
+    try {
+      dispatch(importDataFromExcel(rowData));
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  const [fileImage, setFileImage] = useState({});
+
   const [page, setPage] = useState(1);
 
   const limit = 10;
@@ -66,8 +137,6 @@ function ProductManager() {
 
   const [showEdit, setShowEdit] = useState(false);
 
-  const shopId = useSelector((state) => state.auth.currentUser?.shop.id);
-
   const error = useSelector((state) => state.auth.error);
 
   const dispatch = useDispatch();
@@ -82,6 +151,7 @@ function ProductManager() {
     name: "",
     categoryId: 0,
     available: 0,
+    image: "",
     importPrice: 0,
     price: 0,
     barcode: "",
@@ -91,6 +161,7 @@ function ProductManager() {
   const [productToEdit, setProductToEdit] = useState({
     id: 0,
     name: "",
+    image: "",
     categoryId: 0,
     available: 0,
     importPrice: 0,
@@ -147,23 +218,42 @@ function ProductManager() {
   };
 
   const create = async () => {
+    if (productService.validate(productToCreate) === false) {
+      return;
+    }
     try {
-      dispatch(add({ product: productToCreate }));
+      dispatch(
+        add({
+          product: { ...productToCreate },
+          file: fileImage,
+        })
+      );
       handleShowToast("Created !");
     } catch (error) {
       console.log(error);
     }
 
+    setFileImage({});
     setShow(false);
   };
 
   const edit = async () => {
+    if (productService.validate(productToEdit) === false) {
+      return;
+    }
     try {
-      dispatch(update({ id: productToEdit.id, product: productToEdit }));
+      dispatch(
+        update({
+          id: productToEdit.id,
+          product: productToEdit,
+          file: fileImage,
+        })
+      );
       handleShowToast("Updated !");
     } catch (error) {
       console.log(error);
     }
+    setFileImage({});
 
     setShowEdit(false);
   };
@@ -232,91 +322,129 @@ function ProductManager() {
               <option value="0">Disable</option>
             </Form.Select>
           </InputGroup>
+
           <Pagination>{items}</Pagination>
+          <hr />
+
+          <div className="form-group">
+            <a
+              href="/fileExcelToImport.xlsx"
+              target={"_blank"}
+              download
+              style={{ color: "red" }}
+            >
+              Click to Download the sample file here !!!
+            </a>
+            <input
+              className="form-control"
+              type="file"
+              onChange={handleFileChange}
+            />
+            <Button variant="success" className="m-1" onClick={handleUpload}>
+              Get Products from file excel
+            </Button>
+            <Button variant="primary" className="m-1" onClick={importData}>
+              Upload
+            </Button>
+          </div>
         </div>
         <div className="product-list col-9">
           <div className="product-create">
-            <Button variant="primary" onClick={handleShow}>
-              Create a new Category
+            <Button variant="primary" className="m-1" onClick={handleShow}>
+              Create a new Product
             </Button>
           </div>
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Product name</th>
-                <th>Category name</th>
-                <th>Price</th>
-                <th>Import price</th>
-                <th>Available</th>
-                <th>Barcode</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {productData ? (
-                productData.slice(startIndex, endIndex).map((item) => {
-                  if (
-                    (filter.searchText === "" ||
-                      item.name
-                        .toLowerCase()
-                        .indexOf(filter.searchText.toLowerCase()) !== -1 ||
-                      item.barcode
-                        .toLowerCase()
-                        .indexOf(filter.searchText.toLowerCase()) !== -1) &&
-                    (filter.categoryId == 0 ||
-                      item.categoryId == filter.categoryId) &&
-                    (filter.status == 2 || filter.status == item.status)
-                  )
-                    return (
-                      <tr key={item.id}>
-                        <td>{item.id}</td>
-                        <td>{item.name}</td>
-                        <td>{item.categoryName}</td>
-                        <td>{item.price}</td>
-                        <td>{item.importPrice}</td>
-                        <td>{item.available}</td>
-                        <td>{item.barcode}</td>
-                        <td>{item.status === 1 ? "Using" : "Disabled"}</td>
-                        <td>
-                          <Button
-                            variant="primary"
-                            style={{ marginRight: 5 }}
-                            onClick={() => {
-                              handleShowEdit(item);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          {item.status === 1 ? (
+          <div
+            className="tabale scroll-container"
+            style={{ maxHeight: "80vh" }}
+          >
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Photo</th>
+                  <th>Product name</th>
+                  <th>Category name</th>
+                  <th>Price</th>
+                  <th>Import price</th>
+                  <th>Available</th>
+                  <th>Barcode</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {productData ? (
+                  productData.slice(startIndex, endIndex).map((item) => {
+                    if (
+                      (filter.searchText === "" ||
+                        item.name
+                          .toLowerCase()
+                          .indexOf(filter.searchText.toLowerCase()) !== -1 ||
+                        item.barcode
+                          .toLowerCase()
+                          .indexOf(filter.searchText.toLowerCase()) !== -1) &&
+                      (filter.categoryId == 0 ||
+                        item.categoryId == filter.categoryId) &&
+                      (filter.status == 2 || filter.status == item.status)
+                    )
+                      return (
+                        <tr key={item.id}>
+                          <td>{item.id}</td>
+                          <td>
+                            <img
+                              style={{ maxWidth: 150 }}
+                              className="img-thumbnail"
+                              src={item.image || "/productItem.jpg"}
+                              alt=""
+                            />
+                          </td>
+                          <td>{item.name}</td>
+                          <td>{item.categoryName}</td>
+                          <td>{item.price}</td>
+                          <td>{item.importPrice}</td>
+                          <td>{item.available}</td>
+                          <td>{item.barcode}</td>
+                          <td>{item.status === 1 ? "Using" : "Disabled"}</td>
+                          <td>
                             <Button
-                              variant="danger"
+                              variant="primary"
+                              style={{ marginRight: 5 }}
                               onClick={() => {
-                                disable(item.id);
+                                handleShowEdit(item);
                               }}
                             >
-                              Disable
+                              Edit
                             </Button>
-                          ) : (
-                            <Button
-                              variant="success"
-                              onClick={() => {
-                                restore(item.id);
-                              }}
-                            >
-                              Restore
-                            </Button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                })
-              ) : (
-                <tr></tr>
-              )}
-            </tbody>
-          </Table>
+                            {item.status === 1 ? (
+                              <Button
+                                variant="danger"
+                                onClick={() => {
+                                  disable(item.id);
+                                }}
+                              >
+                                Disable
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="success"
+                                onClick={() => {
+                                  restore(item.id);
+                                }}
+                              >
+                                Restore
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                  })
+                ) : (
+                  <tr></tr>
+                )}
+              </tbody>
+            </Table>
+          </div>
         </div>
       </div>
 
@@ -342,6 +470,17 @@ function ProductManager() {
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+              <Form.Label>Photo</Form.Label>
+              <Form.Control
+                onChange={(e) => {
+                  setFileImage(e.target.files[0]);
+                }}
+                type="file"
+                required
+                name="img"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Chose a category</Form.Label>
               <Form.Select
                 required
@@ -352,6 +491,7 @@ function ProductManager() {
                   });
                 }}
               >
+                <option value={0}>Chose a category?</option>
                 {categoryData ? (
                   categoryData.map((item) => {
                     return (
@@ -369,7 +509,7 @@ function ProductManager() {
               <Form.Label>Price</Form.Label>
               <Form.Control
                 onChange={handleChangeProductToCreate}
-                type="text"
+                type="number"
                 required
                 name="price"
               />
@@ -378,7 +518,7 @@ function ProductManager() {
               <Form.Label>Import price</Form.Label>
               <Form.Control
                 onChange={handleChangeProductToCreate}
-                type="text"
+                type="number"
                 required
                 name="importPrice"
               />
@@ -387,7 +527,7 @@ function ProductManager() {
               <Form.Label>Available</Form.Label>
               <Form.Control
                 onChange={handleChangeProductToCreate}
-                type="text"
+                type="number"
                 required
                 name="available"
               />
@@ -427,6 +567,19 @@ function ProductManager() {
                 name="name"
               />
             </Form.Group>
+
+            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+              <Form.Label>Photo</Form.Label>
+              <Form.Control
+                onChange={(e) => {
+                  setFileImage(e.target.files[0]);
+                }}
+                type="file"
+                required
+                name="img"
+              />
+            </Form.Group>
+
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Chose a category</Form.Label>
               <Form.Select
@@ -456,7 +609,7 @@ function ProductManager() {
               <Form.Control
                 onChange={handleChangeProductToEdit}
                 value={productToEdit.price}
-                type="text"
+                type="number"
                 required
                 name="price"
               />
@@ -466,17 +619,18 @@ function ProductManager() {
               <Form.Control
                 onChange={handleChangeProductToEdit}
                 value={productToEdit.importPrice}
-                type="text"
+                type="number"
                 required
                 name="importPrice"
               />
+              import productService from './../service/productService';
             </Form.Group>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Label>Available</Form.Label>
               <Form.Control
                 onChange={handleChangeProductToEdit}
                 value={productToEdit.available}
-                type="text"
+                type="number"
                 required
                 name="available"
               />

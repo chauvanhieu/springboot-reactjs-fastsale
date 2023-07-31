@@ -2,13 +2,13 @@ import { remove, update, clear } from "../redux/cartSlice";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-
+import { addOrder } from "../redux/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import orderService from "./../service/orderService";
 import Nofitication from "./Nofitication";
-
 function ShopingCart() {
+  const loading = useSelector((state) => state.order.loading);
+  const error = useSelector((state) => state.order.error);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
@@ -18,7 +18,7 @@ function ShopingCart() {
     setTimeout(() => {
       setShowToast(false);
       setToastMessage("");
-    }, 3000);
+    }, 400);
   };
 
   const cartData = useSelector((state) => state.cart.data);
@@ -39,16 +39,6 @@ function ShopingCart() {
     dispatch(clear());
   };
 
-  const totalAmount = () => {
-    let total = 0;
-    if (cartData) {
-      cartData.forEach((item) => {
-        total += item.count * item.price;
-      });
-    }
-    return total;
-  };
-
   const checkout = async () => {
     if (!cartData || cartData.length === 0) {
       alert("No element in your shoping cart");
@@ -65,11 +55,11 @@ function ShopingCart() {
         orderDetails: cartData,
       };
 
-      const res = await orderService.create(order);
-      if (res.status === 201) {
+      dispatch(addOrder({ order }));
+      if (!loading && !error) {
         handleShowToast("Checkout success !");
-        dispatch(clear());
       }
+      dispatch(clear());
     } catch (error) {
       console.log(error);
     }

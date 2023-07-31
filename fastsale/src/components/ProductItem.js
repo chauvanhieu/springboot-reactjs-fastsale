@@ -22,7 +22,11 @@ function ProductItem(props) {
       }}
     >
       <div className="item-icon mt-1">
-        <img src="/productItem.jpg" alt="" style={{ width: 60, height: 60 }} />
+        <img
+          src={item.image || "/productItem.jpg"}
+          alt=""
+          style={{ width: 60, height: 60, objectFit: "contain" }}
+        />
       </div>
       <div className="item-info ">
         <h6 style={{ color: "blue" }}>{item.name}</h6>

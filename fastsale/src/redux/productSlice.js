@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import uploadService from "../service/uploadService";
 import productService from "./../service/productService";
 
 export const getData = createAsyncThunk(
@@ -15,8 +16,13 @@ export const getData = createAsyncThunk(
 
 export const add = createAsyncThunk(
   "product/add",
-  async ({ product }, thunkAPI) => {
+  async ({ product, file }, thunkAPI) => {
     try {
+      let imgLink = "";
+      if (file) {
+        imgLink = await uploadService.save(file);
+      }
+      product.image = imgLink;
       const response = await productService.create(product);
       return response.data;
     } catch (error) {
@@ -24,7 +30,17 @@ export const add = createAsyncThunk(
     }
   }
 );
-
+export const importDataFromExcel = createAsyncThunk(
+  "product/importDataFromExcel",
+  async (list, thunkAPI) => {
+    try {
+      const response = await productService.importData(list);
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+);
 export const remove = createAsyncThunk(
   "product/remove",
   async ({ id }, thunkAPI) => {
@@ -51,11 +67,19 @@ export const restore = createAsyncThunk(
 
 export const update = createAsyncThunk(
   "product/update",
-  async ({ id, product }, thunkAPI) => {
+  async ({ id, product, file }, thunkAPI) => {
     try {
-      const response = await productService.update(Number(id), product);
+      let imgLink = product.image;
+      if (file) {
+        imgLink = await uploadService.save(file);
+      }
+      const response = await productService.update(Number(id), {
+        ...product,
+        image: imgLink,
+      });
       return response.data;
     } catch (error) {
+      console.log(error);
       return thunkAPI.rejectWithValue(error.message);
     }
   }
@@ -95,7 +119,21 @@ const productSlice = createSlice({
       .addCase(add.fulfilled, (state, action) => {
         state.loading = false;
         const newDataItem = { ...action.payload };
-        state.data.push(newDataItem);
+        state.data.unshift(newDataItem);
+        state.error = false;
+      })
+      .addCase(importDataFromExcel.rejected, (state) => {
+        state.loading = true;
+        state.error = true;
+      })
+      .addCase(importDataFromExcel.pending, (state) => {
+        state.loading = true;
+        state.error = false;
+      })
+      .addCase(importDataFromExcel.fulfilled, (state, action) => {
+        state.loading = false;
+
+        state.data = [...action.payload, ...state.data];
         state.error = false;
       })
       .addCase(add.rejected, (state) => {
@@ -145,7 +183,7 @@ const productSlice = createSlice({
         if (index !== -1) {
           state.data[index] = { ...state.data[index], ...product };
         } else {
-          state.data.push(product);
+          state.data.unshift(product);
         }
         state.error = false;
       })

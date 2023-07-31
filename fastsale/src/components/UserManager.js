@@ -14,6 +14,7 @@ import {
 } from "../redux/userSlice";
 import Nofitication from "./Nofitication";
 import { Pagination } from "react-bootstrap";
+import userService from "../service/userService";
 function UserManager() {
   const [show, setShow] = useState(false);
 
@@ -105,6 +106,9 @@ function UserManager() {
   };
 
   const create = async () => {
+    if (userService.validate(userEmp) === false) {
+      return;
+    }
     try {
       setUserEmp({ ...userEmp, id: 0, status: 1 });
       dispatch(add({ user: userEmp }));
@@ -118,6 +122,9 @@ function UserManager() {
   };
 
   const edit = async () => {
+    if (userService.validate(userEmp) === false) {
+      return;
+    }
     try {
       dispatch(update({ id: Number(userEmp.id), user: userEmp }));
       handleShowToast("Updated !");

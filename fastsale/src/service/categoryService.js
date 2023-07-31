@@ -67,6 +67,12 @@ const categoryService = {
       throw error; // Ném lại lỗi để xử lý tiếp (nếu cần)
     }
   },
+  validate: (category) => {
+    if (category.name === "") {
+      alert("Category name not null !");
+      return false;
+    }
+  },
 };
 
 export default categoryService;

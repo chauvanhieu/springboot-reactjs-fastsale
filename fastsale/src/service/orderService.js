@@ -16,7 +16,7 @@ const orderService = {
       page: page || 1,
       limit: limit || 999999,
       order_by: order_by || "desc",
-      sort_by: sort_by || "price",
+      sort_by: sort_by || "id",
       min_price: min_price || null,
       max_price: max_price || null,
       shop_id: shop_id || 0,

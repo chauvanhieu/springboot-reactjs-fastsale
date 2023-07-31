@@ -34,6 +34,17 @@ public class Product {
 	@Column(name = "import_price", nullable = false)
 	private double importPrice;
 
+	@Column(name = "image", nullable = true)
+	private String image;
+	
+	public String getImage() {
+		return image;
+	}
+
+	public void setImage(String image) {
+		this.image = image;
+	}
+
 	@ManyToOne
 	private Shop shop;
 

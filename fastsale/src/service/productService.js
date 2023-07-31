@@ -30,7 +30,7 @@ const productService = {
       limit: limit || 999999,
       category_id: category_id || 0,
       order_by: order_by || "desc",
-      sort_by: sort_by || "price",
+      sort_by: sort_by || "id",
       min_price: min_price || null,
       max_price: max_price || null,
       shop_id: shop_id || 0,
@@ -93,6 +93,40 @@ const productService = {
       console.error("Error restoring product:", error);
       throw error; // Ném lại lỗi để xử lý tiếp (nếu cần)
     }
+  },
+  importData: async (list) => {
+    console.log(list);
+    try {
+      const response = await AxiosService.post(`/api/products/import`, list);
+      console.log(response);
+      return response;
+    } catch (error) {
+      console.error("Error creating product:", error);
+      throw error; // Ném lại lỗi để xử lý tiếp (nếu cần)
+    }
+  },
+  validate: (product) => {
+    if (!product.name) {
+      alert("Product name cannot be null");
+      return false;
+    }
+    if (!product.price || product.price < 1000) {
+      alert("Product price cannot < 1000");
+      return false;
+    }
+    if (!product.importPrice || product.price < 1000) {
+      alert("Product import price cannot < 1000");
+      return false;
+    }
+    if (!product.categoryId || product.categoryId == 0) {
+      alert("Please chose a category");
+      return false;
+    }
+    if (!product.available || product.available < 1) {
+      alert("Available > 1");
+      return false;
+    }
+    return true;
   },
 };
 

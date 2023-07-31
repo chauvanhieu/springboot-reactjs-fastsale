@@ -9,7 +9,7 @@ const Nofitication = (props) => {
         bg={props.bg}
         show={props.show}
         onClose={props.onClose}
-        delay={3000}
+        delay={400}
         autohide
       >
         <Toast.Header>

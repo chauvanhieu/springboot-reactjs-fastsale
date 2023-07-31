@@ -66,6 +66,21 @@ const userService = {
       throw error; // Ném lại lỗi để xử lý tiếp (nếu cần)
     }
   },
+  validate: (user) => {
+    if (user.name === "") {
+      alert("User name not null !");
+      return false;
+    }
+    if (user.email === "") {
+      alert("Email not null !");
+      return false;
+    }
+    if (user.password === "") {
+      alert("Password name not null !");
+      return false;
+    }
+    return true;
+  },
 };
 
 export default userService;

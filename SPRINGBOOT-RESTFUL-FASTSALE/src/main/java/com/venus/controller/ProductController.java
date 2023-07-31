@@ -57,7 +57,7 @@ public class ProductController {
 			@RequestParam(value = "limit", defaultValue = "999999") int limit,
 			@RequestParam(value = "category_id", defaultValue = "0") int categoryID,
 			@RequestParam(value = "order_by", defaultValue = "desc") String orderBy,
-			@RequestParam(value = "sort_by", defaultValue = "price") String sortBy,
+			@RequestParam(value = "sort_by", defaultValue = "id") String sortBy,
 			@RequestParam(value = "min_price", required = false) Optional<Double> minPrice,
 			@RequestParam(value = "max_price", required = false) Optional<Double> maxPrice,
 			@RequestParam(value = "shop_id", defaultValue = "0") int shopId) {
@@ -152,8 +152,33 @@ public class ProductController {
 	@PostMapping
 	public ResponseEntity<ProductDTO> create(@RequestBody ProductDTO item) {
 		try {
+			item.setStatus(1);
 			Product product = productRepository.save(productConverter.toEntity(item));
 			return new ResponseEntity<>(productConverter.toDTO(product), HttpStatus.CREATED);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+			return new ResponseEntity<>(null, HttpStatus.EXPECTATION_FAILED);
+		}
+	}
+
+	@PostMapping("/import")
+	public ResponseEntity<List<ProductDTO>> importData(@RequestBody List<ProductDTO> listItem) {
+		try {
+			List<ProductDTO> list = new ArrayList<>();
+			List<Product> listEntity  =new ArrayList<>();
+			if (listItem.size() < 1) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+			for (ProductDTO item : listItem) {
+				item.setStatus(1);
+				listEntity.add(productConverter.toEntity(item));
+			}
+			List<Product> listEntitySaved  = productRepository.saveAll(listEntity);
+			
+			for (Product item : listEntitySaved) {
+				list.add(productConverter.toDTO(item));
+			}
+			return new ResponseEntity<>(list, HttpStatus.CREATED);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 			return new ResponseEntity<>(null, HttpStatus.EXPECTATION_FAILED);

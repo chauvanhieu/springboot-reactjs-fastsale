@@ -2,6 +2,8 @@ import { Form, InputGroup, Pagination, Table } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { useState } from "react";
 function OrderManager() {
+  const loading = useSelector((state) => state.order.loading);
+
   const orderData = useSelector((state) => state.order.data);
 
   const [page, setPage] = useState(1);
@@ -11,25 +13,25 @@ function OrderManager() {
   const endIndex = startIndex + limit;
 
   let items = [];
-
-  for (
-    let number = 1;
-    number <= Math.ceil(orderData.length / limit);
-    number++
-  ) {
-    items.push(
-      <Pagination.Item
-        onClick={() => {
-          setPage(number);
-        }}
-        key={number}
-        active={number === page}
-      >
-        {number}
-      </Pagination.Item>
-    );
+  if (orderData) {
+    for (
+      let number = 1;
+      number <= Math.ceil(orderData.length / limit);
+      number++
+    ) {
+      items.push(
+        <Pagination.Item
+          onClick={() => {
+            setPage(number);
+          }}
+          key={number}
+          active={number === page}
+        >
+          {number}
+        </Pagination.Item>
+      );
+    }
   }
-
   const [filter, setFilter] = useState({
     searchText: "",
     minPrice: 0,
@@ -41,9 +43,16 @@ function OrderManager() {
       ...prevFormData,
       [name]: value,
     }));
-
-    console.log(filter);
   };
+
+  if (loading) {
+    return (
+      <center>
+        <h1>Đang tải dữ liệu...</h1>
+      </center>
+    );
+  }
+
   return (
     <div className="container-fluid">
       <div className="row">
@@ -88,7 +97,6 @@ function OrderManager() {
               step="1"
             />
           </div>
-          <Pagination>{items}</Pagination>
         </div>
         <div className="order-list col-9">
           <Table striped bordered hover>
@@ -107,6 +115,9 @@ function OrderManager() {
                   if (
                     (filter.searchText === "" ||
                       item.username
+                        .toLowerCase()
+                        .indexOf(filter.searchText.toLowerCase()) !== -1 ||
+                      String(item.id)
                         .toLowerCase()
                         .indexOf(filter.searchText.toLowerCase()) !== -1) &&
                     item.price > Number(filter.minPrice) &&
@@ -184,6 +195,7 @@ function OrderManager() {
               )}
             </tbody>
           </Table>
+          <Pagination>{items}</Pagination>
         </div>
       </div>
     </div>

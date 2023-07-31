@@ -92,7 +92,7 @@ const userSlice = createSlice({
       .addCase(add.fulfilled, (state, action) => {
         state.loading = false;
         const newDataItem = { ...action.payload };
-        state.data.push(newDataItem);
+        state.data.unshift(newDataItem);
         state.error = false;
       })
       .addCase(add.rejected, (state) => {

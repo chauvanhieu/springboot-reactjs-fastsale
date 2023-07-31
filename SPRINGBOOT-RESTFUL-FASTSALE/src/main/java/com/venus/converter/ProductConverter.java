@@ -21,6 +21,7 @@ public class ProductConverter {
 
 	public ProductDTO toDTO(Product product) {
 		ProductDTO productDTO = new ProductDTO();
+		productDTO.setImage(product.getImage());
 		productDTO.setId(product.getId());
 		productDTO.setName(product.getName());
 		productDTO.setPrice(product.getPrice());
@@ -37,6 +38,7 @@ public class ProductConverter {
 	public Product toEntity(ProductDTO productDTO) {
 		Product product = productRepository.findById(productDTO.getId()).orElse(new Product());
 		product.setBarCode(productDTO.getBarcode());
+		product.setImage(productDTO.getImage());
 		product.setName(productDTO.getName());
 		product.setPrice(productDTO.getPrice());
 		product.setCategory(categoryRepository.findById(productDTO.getCategoryId()).orElse(null));

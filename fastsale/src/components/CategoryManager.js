@@ -14,6 +14,7 @@ import Table from "react-bootstrap/Table";
 import InputGroup from "react-bootstrap/InputGroup";
 import Pagination from "react-bootstrap/Pagination";
 import Nofitication from "./Nofitication";
+import categoryService from "./../service/categoryService";
 
 function CategoryManager() {
   const [show, setShow] = useState(false);
@@ -94,6 +95,10 @@ function CategoryManager() {
   };
 
   const create = async () => {
+    if (categoryService.validate(categoryEmp) === false) {
+      return;
+    }
+
     try {
       setCategoryEmp({ ...categoryEmp, id: 0, status: 1 });
       dispatch(add({ category: categoryEmp }));
@@ -107,6 +112,9 @@ function CategoryManager() {
   };
 
   const edit = async () => {
+    if (categoryService.validate(categoryEmp) === false) {
+      return;
+    }
     try {
       dispatch(update({ id: categoryEmp.id, category: categoryEmp }));
       handleShowToast("Updated !");
