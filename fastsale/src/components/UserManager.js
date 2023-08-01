@@ -38,18 +38,24 @@ function UserManager() {
 
   let items = [];
 
-  for (let number = 1; number <= Math.ceil(userData.length / limit); number++) {
-    items.push(
-      <Pagination.Item
-        onClick={() => {
-          setPage(number);
-        }}
-        key={number}
-        active={number === page}
-      >
-        {number}
-      </Pagination.Item>
-    );
+  if (userData) {
+    for (
+      let number = 1;
+      number <= Math.ceil(userData.length / limit);
+      number++
+    ) {
+      items.push(
+        <Pagination.Item
+          onClick={() => {
+            setPage(number);
+          }}
+          key={number}
+          active={number === page}
+        >
+          {number}
+        </Pagination.Item>
+      );
+    }
   }
 
   const [userEmp, setUserEmp] = useState({

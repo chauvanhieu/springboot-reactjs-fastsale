@@ -62,10 +62,15 @@ const orderSlice = createSlice({
         state.error = false;
       })
       .addCase(addOrder.fulfilled, (state, action) => {
-        const newItem = { ...action.payload };
-        state.data.unshift(newItem);
         state.error = false;
         state.loading = false;
+
+        const newItem = { ...action.payload };
+        if (state.data) {
+          state.data.unshift(newItem);
+        } else {
+          state.data = [{ ...newItem }];
+        }
       })
       .addCase(addOrder.rejected, (state) => {
         state.loading = false;

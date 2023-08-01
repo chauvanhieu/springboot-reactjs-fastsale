@@ -16,8 +16,8 @@ import {
 import * as XLSX from "xlsx";
 import Nofitication from "./Nofitication";
 import productService from "../service/productService";
-import { Link } from "react-router-dom";
 function ProductManager() {
+  const [readyImport, setReadyImport] = useState(false);
   const categoryData = useSelector((state) => state.category?.data);
   const productData = useSelector((state) => state.product.data);
   const shopId = useSelector((state) => state.auth.currentUser?.shop.id);
@@ -76,6 +76,7 @@ function ProductManager() {
       // Đọc dữ liệu của tệp Excel dưới dạng 'binary' (dữ liệu nhị phân)
       reader.readAsBinaryString(selectedFile);
       handleShowToast("Get products success !");
+      setReadyImport(true);
     } else {
       alert("Vui lòng chọn một tệp Excel để tải lên.");
     }
@@ -83,6 +84,9 @@ function ProductManager() {
   const importData = async () => {
     try {
       dispatch(importDataFromExcel(rowData));
+      setReadyImport(false);
+      setSelectedFile(null);
+      setRowData([]);
     } catch (e) {
       console.log(e);
     }
@@ -97,22 +101,24 @@ function ProductManager() {
 
   let items = [];
 
-  for (
-    let number = 1;
-    number <= Math.ceil(productData.length / limit);
-    number++
-  ) {
-    items.push(
-      <Pagination.Item
-        onClick={() => {
-          setPage(number);
-        }}
-        key={number}
-        active={number === page}
-      >
-        {number}
-      </Pagination.Item>
-    );
+  if (productData) {
+    for (
+      let number = 1;
+      number <= Math.ceil(productData.length / limit);
+      number++
+    ) {
+      items.push(
+        <Pagination.Item
+          onClick={() => {
+            setPage(number);
+          }}
+          key={number}
+          active={number === page}
+        >
+          {number}
+        </Pagination.Item>
+      );
+    }
   }
 
   const [showToast, setShowToast] = useState(false);
@@ -340,12 +346,16 @@ function ProductManager() {
               type="file"
               onChange={handleFileChange}
             />
-            <Button variant="success" className="m-1" onClick={handleUpload}>
+            <Button variant="primary" className="m-1" onClick={handleUpload}>
               Get Products from file excel
             </Button>
-            <Button variant="primary" className="m-1" onClick={importData}>
-              Upload
-            </Button>
+            {readyImport ? (
+              <Button variant="success" className="m-1" onClick={importData}>
+                Upload
+              </Button>
+            ) : (
+              <></>
+            )}
           </div>
         </div>
         <div className="product-list col-9">

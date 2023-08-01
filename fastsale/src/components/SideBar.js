@@ -67,6 +67,9 @@ function SideBar() {
                   <Link to="/app/order">Đơn hàng</Link>
                 </Nav.Item>
                 <Nav.Item onClick={closeSideBar} className="m-3">
+                  <Link to="/app/report">Thống kê</Link>
+                </Nav.Item>
+                <Nav.Item onClick={closeSideBar} className="m-3">
                   <Link to="/app/product">Sản phẩm</Link>
                 </Nav.Item>
                 {userRole === "ROLE_ADMIN" ? (

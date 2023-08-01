@@ -27,7 +27,7 @@ public class UploadController {
 	public ResponseEntity<?> uploadProductImage(@RequestParam("img") Optional<MultipartFile> file){
 		try {
 			if(file.isEmpty()) {
-				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>("",HttpStatus.OK); 
 			}
 				String imageURL = uploadService.save(file.get());
 				return new ResponseEntity<>(imageURL,HttpStatus.OK); 

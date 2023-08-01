@@ -81,9 +81,11 @@ function LoginPage() {
               >
                 Login
               </Button>
-              <Button variant="success" type="button" className="m-1">
-                Register
-              </Button>
+              <Link to="/home/register">
+                <Button variant="success" type="button" className="m-1">
+                  Register
+                </Button>
+              </Link>
             </center>
             {currentUser.error ? (
               <center>

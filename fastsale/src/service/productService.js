@@ -122,10 +122,7 @@ const productService = {
       alert("Please chose a category");
       return false;
     }
-    if (!product.available || product.available < 1) {
-      alert("Available > 1");
-      return false;
-    }
+
     return true;
   },
 };

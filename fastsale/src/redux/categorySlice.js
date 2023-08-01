@@ -93,9 +93,13 @@ const CategorySlice = createSlice({
       })
       .addCase(add.fulfilled, (state, action) => {
         state.loading = false;
-        const newDataItem = { ...action.payload };
-        state.data.unshift(newDataItem);
         state.error = false;
+        const newDataItem = { ...action.payload };
+        if (state.data) {
+          state.data.unshift(newDataItem);
+        } else {
+          state.data = [{ ...newDataItem }];
+        }
       })
       .addCase(add.rejected, (state) => {
         state.loading = true;

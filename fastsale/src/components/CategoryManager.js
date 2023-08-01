@@ -35,22 +35,24 @@ function CategoryManager() {
 
   let items = [];
 
-  for (
-    let number = 1;
-    number <= Math.ceil(categoryData.length / limit);
-    number++
-  ) {
-    items.push(
-      <Pagination.Item
-        onClick={() => {
-          setPage(number);
-        }}
-        key={number}
-        active={number === page}
-      >
-        {number}
-      </Pagination.Item>
-    );
+  if (categoryData) {
+    for (
+      let number = 1;
+      number <= Math.ceil(categoryData.length / limit);
+      number++
+    ) {
+      items.push(
+        <Pagination.Item
+          onClick={() => {
+            setPage(number);
+          }}
+          key={number}
+          active={number === page}
+        >
+          {number}
+        </Pagination.Item>
+      );
+    }
   }
 
   const shopId = useSelector((state) => state.auth.currentUser?.shop.id);

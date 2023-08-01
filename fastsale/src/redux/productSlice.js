@@ -119,7 +119,11 @@ const productSlice = createSlice({
       .addCase(add.fulfilled, (state, action) => {
         state.loading = false;
         const newDataItem = { ...action.payload };
-        state.data.unshift(newDataItem);
+        if (state.data) {
+          state.data.unshift(newDataItem);
+        } else {
+          state.data = [{ ...newDataItem }];
+        }
         state.error = false;
       })
       .addCase(importDataFromExcel.rejected, (state) => {
@@ -132,9 +136,12 @@ const productSlice = createSlice({
       })
       .addCase(importDataFromExcel.fulfilled, (state, action) => {
         state.loading = false;
-
-        state.data = [...action.payload, ...state.data];
         state.error = false;
+        if (state.data) {
+          state.data = [...action.payload, ...state.data];
+        } else {
+          state.data = [...action.payload];
+        }
       })
       .addCase(add.rejected, (state) => {
         state.loading = true;
